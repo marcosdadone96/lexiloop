@@ -4,7 +4,11 @@ AI-powered simulator for official **English** (Cambridge / IELTS oral) and **Ger
 
 ## Live site
 
-**https://lexiloop-exams.netlify.app**
+**https://lexiloop.netlify.app**
+
+GitHub: https://github.com/marcosdadone96/lexiloop
+
+Pushes to `main` auto-deploy via Netlify.
 
 ## Pages
 
@@ -35,7 +39,11 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Deployment
 
-Hosted on Netlify (MechAssist team). Redeploy after changes:
+Hosted on Netlify (MechAssist team), linked to this GitHub repo.
+
+**Automatic:** push to `main` — Netlify builds and deploys.
+
+**Manual (CLI):**
 
 ```powershell
 cd c:\Users\marco\Desktop\MDR\lexiloop
@@ -43,6 +51,4 @@ $env:NODE_TLS_REJECT_UNAUTHORIZED='0'   # only if Netlify CLI hits TLS errors on
 netlify deploy --prod --dir .
 ```
 
-Or run `.\deploy.ps1` after `netlify login`.
-
-Netlify admin: https://app.netlify.com/projects/lexiloop-exams
+Netlify admin: https://app.netlify.com/projects/lexiloop
