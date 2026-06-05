@@ -7,5 +7,9 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.4",
+    "bcryptjs": "^2.4.3"
   }
 }

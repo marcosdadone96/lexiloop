@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LexiLoop — Official English & German Exam Simulator</title>
+<meta name="description" content="AI-powered Goethe and Cambridge exam practice. Reading, listening, writing, speaking, flashcards and oral mode for English and German A1–C2.">
+<meta name="theme-color" content="#0E0E10">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://lexiloop.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://lexiloop.netlify.app/">
+<meta property="og:title" content="LexiLoop — English & German Exam Simulator">
+<meta property="og:description" content="Practice official Goethe and Cambridge exams with AI. All four skills, flashcards, oral mode.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LexiLoop">
+<meta name="twitter:description" content="AI exam practice for English and German official certifications.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -406,7 +417,7 @@ header{padding:26px 0 22px;display:flex;align-items:center;justify-content:space
       </div>
     </div>
     <button class="btn-upgrade" onclick="activatePro()">✦ Upgrade to Pro — €9/month</button>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">(Demo: clicking upgrades instantly — integrate Stripe to charge)</div>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:10px">Stripe checkout coming soon. Join free now — your progress syncs to your account.</p>
     <button class="btn-upgrade-skip" onclick="closeUpgrade()">Maybe later</button>
   </div>
 </div>
@@ -432,9 +443,9 @@ header{padding:26px 0 22px;display:flex;align-items:center;justify-content:space
       <button class="btn-auth" onclick="doRegister()">Create Account →</button>
     </div>
     <div class="auth-or">or</div>
-    <button class="btn-google" onclick="doGoogle()">
+    <button class="btn-google" onclick="doGoogle()" disabled style="opacity:.45;cursor:not-allowed" title="Coming soon">
       <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
-      Continue with Google
+      Google sign-in — coming soon
     </button>
   </div>
 </div>
@@ -510,6 +521,23 @@ header{padding:26px 0 22px;display:flex;align-items:center;justify-content:space
       <button class="quick-btn" onclick="startQuick('writing')">✍️ Writing</button>
       <button class="quick-btn" onclick="startQuick('gapfill')">🔤 Gap-Fill</button>
     </div>
+  </div>
+  <div class="quick-card" id="pricing">
+    <h3>✦ Plans</h3>
+    <p>Start free. Upgrade when you need more full AI exams per month.</p>
+    <div class="plan-cards" style="margin-bottom:0">
+      <div class="plan-card">
+        <div class="plan-card-label">Free</div>
+        <div class="plan-price">€0 <span>/ month</span></div>
+        <div class="plan-features"><b>2</b> full exams / month<br>Flashcards & quick modules<br>Cloud sync</div>
+      </div>
+      <div class="plan-card pro-card">
+        <div class="plan-card-label">Pro ✦</div>
+        <div class="plan-price">€9 <span>/ month</span></div>
+        <div class="plan-features"><b>20</b> full exams / month<br>All features<br>Priority support</div>
+      </div>
+    </div>
+    <button class="btn-sm accent" onclick="showUpgrade()" style="margin-top:14px">View upgrade options</button>
   </div>
 </div>
 
@@ -606,6 +634,7 @@ header{padding:26px 0 22px;display:flex;align-items:center;justify-content:space
 </div>
 </div><!-- .app -->
 
+<script src="js/authClient.js"></script>
 <script src="js/claudeClient.js"></script>
 <script>
 // ═══════════════════════════════════════════
@@ -639,9 +668,9 @@ function loadLS(){
   try{const sv=localStorage.getItem('ll_saved');if(sv)S.savedExams=JSON.parse(sv);}catch(e){}
 }
 function saveUser(u){S.user=u;localStorage.setItem('ll_user',JSON.stringify(u));}
-function saveFC(){localStorage.setItem('ll_fc',JSON.stringify(S.flashcards));updBadges();}
-function saveHist(){localStorage.setItem('ll_hist',JSON.stringify(S.history));}
-function saveSaved(){localStorage.setItem('ll_saved',JSON.stringify(S.savedExams));}
+function saveFC(){localStorage.setItem('ll_fc',JSON.stringify(S.flashcards));updBadges();Auth.pushSync();}
+function saveHist(){localStorage.setItem('ll_hist',JSON.stringify(S.history));Auth.pushSync();}
+function saveSaved(){localStorage.setItem('ll_saved',JSON.stringify(S.savedExams));Auth.pushSync();}
 
 // ═══════════════════════════════════════════
 // QUOTA / PLAN
@@ -654,6 +683,7 @@ function incQuota(){
   const used=getQuotaUsed()+1;
   localStorage.setItem('ll_quota',JSON.stringify({month:getMonthKey(),used}));
   updQuotaUI();
+  Auth.pushSync();
 }
 function isPro(){try{return JSON.parse(localStorage.getItem('ll_pro')||'false');}catch(e){return false;}}
 function getQuotaMax(){return isPro()?PRO_QUOTA:FREE_QUOTA;}
@@ -686,10 +716,8 @@ function updQuotaUI(){
 function showUpgrade(){document.getElementById('upgradeModal').classList.add('show');}
 function closeUpgrade(){document.getElementById('upgradeModal').classList.remove('show');}
 function activatePro(){
-  localStorage.setItem('ll_pro','true');
+  alert('Stripe checkout is coming soon.\n\nCreate a free account now — your flashcards and progress sync to the cloud.');
   closeUpgrade();
-  updQuotaUI();
-  alert('✦ Pro activated! You now have 20 exams/month.\n\n(In production, connect Stripe here.)');
 }
 
 // ═══════════════════════════════════════════
@@ -703,26 +731,26 @@ function switchTab(t){
 }
 function setAMsg(m,ok){const el=document.getElementById('authMsg');el.textContent=m;el.className='auth-msg'+(ok?' ok':'');}
 function getUsers(){try{return JSON.parse(localStorage.getItem('ll_users')||'{}');}catch(e){return{};}}
-function doRegister(){
-  const nm=document.getElementById('rName').value.trim(),em=document.getElementById('rEmail').value.trim().toLowerCase(),pw=document.getElementById('rPass').value;
+async function doRegister(){
+  const nm=document.getElementById('rName').value.trim(),em=document.getElementById('rEmail').value.trim(),pw=document.getElementById('rPass').value;
   if(!nm||!em||!pw){setAMsg('Fill all fields.');return;}
   if(pw.length<6){setAMsg('Min 6 chars.');return;}
-  const u=getUsers();if(u[em]){setAMsg('Email already registered.');return;}
-  u[em]={nm,pw,plan:'free'};localStorage.setItem('ll_users',JSON.stringify(u));
-  saveUser({name:nm,email:em,avatar:nm[0].toUpperCase(),plan:'free'});
-  setAMsg('Account created!',true);setTimeout(closeAuth,600);
+  try{
+    await Auth.register(nm,em,pw);
+    setAMsg('Account created!',true);
+    setTimeout(closeAuth,600);
+  }catch(e){setAMsg(e.message);}
 }
-function doLogin(){
-  const em=document.getElementById('lEmail').value.trim().toLowerCase(),pw=document.getElementById('lPass').value;
+async function doLogin(){
+  const em=document.getElementById('lEmail').value.trim(),pw=document.getElementById('lPass').value;
   if(!em||!pw){setAMsg('Fill all fields.');return;}
-  const u=getUsers();if(!u[em]||u[em].pw!==pw){setAMsg('Invalid email or password.');return;}
-  saveUser({name:u[em].nm,email:em,avatar:u[em].nm[0].toUpperCase(),plan:u[em].plan||'free'});
-  setAMsg('Welcome back!',true);setTimeout(closeAuth,600);
+  try{
+    await Auth.login(em,pw);
+    setAMsg('Welcome back!',true);
+    setTimeout(closeAuth,600);
+  }catch(e){setAMsg(e.message);}
 }
-function doGoogle(){
-  saveUser({name:'Google User',email:'google@LexiLoop.app',avatar:'G',plan:'free'});
-  setAMsg('Signed in!',true);setTimeout(closeAuth,600);
-}
+function doGoogle(){setAMsg('Google sign-in coming soon.');}
 function closeAuth(){
   const ov=document.getElementById('authOverlay');
   ov.style.animation='fadeIn .2s ease reverse';
@@ -737,7 +765,7 @@ function updUserBtn(){
 function showUserMenu(){
   const plan=isPro()?'Pro ✦':'Free';
   if(confirm(`Signed in as ${S.user?.name||'?'} (${plan} plan).\n\nSign out?`)){
-    S.user=null;localStorage.removeItem('ll_user');
+    Auth.logout();
     document.getElementById('userAv').textContent='?';
     document.getElementById('userNm').textContent='Account';
     const ov=document.getElementById('authOverlay');ov.style.display='flex';ov.style.animation='fadeIn .3s ease';
@@ -1203,16 +1231,15 @@ function ansVE(el,encAns,encCorr){
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
-function init(){
+async function init(){
   loadLS();loadTheme();
   const ov=document.getElementById('authOverlay');
-  if(S.user){
+  const ok=await Auth.bootstrap();
+  if(ok){
     updUserBtn();
     if(ov)ov.style.display='none';
   }else{
-    saveUser({name:'Guest',email:'guest@lexiloop.app',avatar:'G',plan:'free'});
-    updUserBtn();
-    if(ov)ov.style.display='none';
+    if(ov)ov.style.display='flex';
   }
   updBadges();updQuotaUI();show('homeScreen');
 }
