@@ -20,34 +20,55 @@ Pushes to `main` auto-deploy via Netlify.
 ## Requirements
 
 - Modern browser (Chrome or Edge recommended for speech recognition)
-- [Anthropic](https://console.anthropic.com/settings/keys) API key (stored in `localStorage`)
+- **Server-side** Anthropic API key (users no longer paste keys in the browser)
+
+## Environment variables
+
+Set in **Netlify ? Site settings ? Environment variables** (and locally in `.env`):
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ANTHROPIC_API_KEY` | Yes | Your Anthropic API key |
+| `CLAUDE_MODEL` | No | Default: `claude-sonnet-4-20250514` |
+| `LEXILOOP_ALLOWED_ORIGINS` | No | Extra CORS origins, comma-separated |
+
+Copy `.env.example` to `.env` for local development.
 
 ## Local development
 
-**Easy option (Windows):** double-click `start.bat` — starts the server and opens your browser.
+**Easy option (Windows):** double-click `start.bat`
 
 **Terminal:**
 
 ```powershell
 cd c:\Users\marco\Desktop\MDR\lexiloop
+copy .env.example .env
+# Edit .env and add your ANTHROPIC_API_KEY
 npm start
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-> Do not open `index.html` directly from the file explorer (`file://`). The app needs a local HTTP server.
+**With Netlify Functions (matches production):**
+
+```powershell
+npm run dev
+```
+
+## AI proxy
+
+Claude calls go through `/.netlify/functions/claude-chat` — the API key never reaches the browser.
 
 ## Deployment
 
 Hosted on Netlify (MechAssist team), linked to this GitHub repo.
 
-**Automatic:** push to `main` — Netlify builds and deploys.
+**Automatic:** push to `main`.
 
 **Manual (CLI):**
 
 ```powershell
-cd c:\Users\marco\Desktop\MDR\lexiloop
-$env:NODE_TLS_REJECT_UNAUTHORIZED='0'   # only if Netlify CLI hits TLS errors on your network
+$env:NODE_TLS_REJECT_UNAUTHORIZED='0'
 netlify deploy --prod --dir .
 ```
 

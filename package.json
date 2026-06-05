@@ -5,6 +5,7 @@
   "type": "module",
   "description": "LexiLoop - AI-powered official English and German exam preparation",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "dev": "netlify dev"
   }
 }

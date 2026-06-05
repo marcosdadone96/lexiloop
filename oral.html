@@ -34,11 +34,6 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .logo-sep { width:1px; height:18px; background:var(--border2); margin:0 4px }
 .logo-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:100px; background:var(--purple-bg); color:var(--purple); border:.5px solid rgba(167,139,250,.25); letter-spacing:.06em; text-transform:uppercase }
 
-/* ── API BANNER ── */
-#apiBanner { background:var(--bg2); border:.5px solid var(--border2); border-radius:var(--r); padding:12px 16px; margin-top:20px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px }
-#apiKeyInput { flex:1; min-width:200px; background:var(--bg3); border:.5px solid var(--border2); border-radius:6px; padding:6px 10px; font-size:12px; color:var(--text); font-family:'DM Mono',monospace; outline:none }
-#apiKeyInput:focus { border-color:var(--accent) }
-.btn-sm-accent { background:var(--accent); color:#000; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Syne',sans-serif }
 
 /* ── EXAM CONFIG ── */
 #configScreen { padding:40px 0; animation:fadeUp .4s ease }
@@ -208,14 +203,6 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
     <span class="logo-badge">🎙 Beta</span>
   </header>
 
-  <!-- API Banner -->
-  <div id="apiBanner">
-    <span style="color:var(--accent);font-weight:700">⚠ API Key required</span>
-    <input id="apiKeyInput" placeholder="sk-ant-api03-..." />
-    <button class="btn-sm-accent" onclick="saveKey()">Save</button>
-    <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--blue);font-size:11px;white-space:nowrap">Get API key →</a>
-  </div>
-
   <!-- ══ CONFIG SCREEN ══ -->
   <div id="configScreen">
     <div style="margin-top:44px">
@@ -353,12 +340,12 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 
 </div><!-- /app -->
 
+<script src="js/claudeClient.js"></script>
 <script>
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 const S = {
-  apiKey: localStorage.getItem('ll_apikey') || '',
   exam: 'Goethe',
   level: 'B1',
   task: null,
@@ -424,23 +411,10 @@ const TASKS = {
 // INIT
 // ══════════════════════════════════════════
 function init() {
-  if (S.apiKey) {
-    document.getElementById('apiBanner').innerHTML =
-      `<span style="color:var(--green)">✓ API Key saved</span><span style="color:var(--text3);flex:1">Claude is ready to evaluate.</span><button onclick="clearKey()" style="background:var(--surface);border:.5px solid var(--border2);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Syne',sans-serif">Change</button>`;
-  }
   if (!S.hasSpeechAPI) {
     document.getElementById('browserWarn').style.display = 'block';
   }
 }
-
-function saveKey() {
-  const v = document.getElementById('apiKeyInput')?.value.trim();
-  if (!v || !v.startsWith('sk-')) { alert('Key must start with sk-ant-...'); return; }
-  S.apiKey = v;
-  localStorage.setItem('ll_apikey', v);
-  init();
-}
-function clearKey() { S.apiKey = ''; localStorage.removeItem('ll_apikey'); location.reload(); }
 
 // ══════════════════════════════════════════
 // CONFIG
@@ -457,7 +431,6 @@ function selectLevel(el) {
 }
 
 function startExam() {
-  if (!S.apiKey) { alert('Enter your Anthropic API Key first.'); return; }
   const taskData = TASKS[S.exam]?.[S.level];
   if (!taskData) { alert('Exam/level combination not available.'); return; }
   S.task = taskData;
@@ -591,7 +564,6 @@ async function evaluate() {
     alert('Transcript is empty or too short. Record your answer first.');
     return;
   }
-  if (!S.apiKey) { alert('API Key not configured.'); return; }
 
   show('loadingScreen');
   animateLoaderSteps();
@@ -621,37 +593,13 @@ Evaluate using the official ${S.exam} rubric. Reply ONLY with a valid JSON objec
 }`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': S.apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: systemPrompt }]
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'API error');
-    }
-
-    const data = await res.json();
-    const raw = data.content.map(b => b.text || '').join('').trim();
-
-    // Parse JSON — strip markdown fences if present
+    const raw = await callAI(systemPrompt, 1000);
     const clean = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
-
     renderResults(result, transcript);
   } catch (err) {
     show('examScreen');
-    alert('Evaluation error: ' + err.message + '\n\nCheck your API Key and connection.');
+    alert('Evaluation error: ' + err.message);
   }
 }
 

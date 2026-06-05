@@ -3,6 +3,7 @@ import { readFile } from "fs/promises";
 import { join, extname } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { handleClaudeHttpRequest } from "./lib/claudeProxy.mjs";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const PORT = 5173;
@@ -17,23 +18,62 @@ const MIME = {
   ".webp": "image/webp",
 };
 
+async function loadDotEnv() {
+  try {
+    const raw = await readFile(join(root, ".env"), "utf8");
+    for (const line of raw.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const idx = trimmed.indexOf("=");
+      if (idx === -1) continue;
+      const key = trimmed.slice(0, idx).trim();
+      let val = trimmed.slice(idx + 1).trim();
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+      if (!process.env[key]) process.env[key] = val;
+    }
+  } catch {
+    /* no local .env */
+  }
+}
+
+await loadDotEnv();
+
 createServer(async (req, res) => {
   let path = (req.url || "/").split("?")[0];
+
+  if (path === "/.netlify/functions/claude-chat") {
+    await handleClaudeHttpRequest(req, res);
+    return;
+  }
+
   if (path === "/") path = "/index.html";
 
   try {
     const file = join(root, path);
     const data = await readFile(file);
-    res.writeHead(200, { "Content-Type": MIME[extname(path)] || "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": MIME[extname(path)] || "application/octet-stream",
+    });
     res.end(data);
   } catch {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("404 — not found");
   }
 }).listen(PORT, "127.0.0.1", () => {
+  const aiReady = Boolean(process.env.ANTHROPIC_API_KEY);
   console.log("");
   console.log("  LexiLoop ready");
   console.log("  Open: http://localhost:" + PORT);
+  console.log(
+    aiReady
+      ? "  AI proxy: ready (ANTHROPIC_API_KEY loaded)"
+      : "  AI proxy: add ANTHROPIC_API_KEY to .env for local AI"
+  );
   console.log("  Ctrl+C to stop");
   console.log("");
 });

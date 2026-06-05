@@ -1,6 +1,9 @@
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [build]
   publish = "."
-
 [[redirects]]
   from = "/oral"
   to = "/oral.html"
