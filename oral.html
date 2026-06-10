@@ -3,36 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LexiLoop — Oral Mode (IELTS & Goethe)</title>
+<title>LexiCoil — Oral Mode (IELTS & Goethe)</title>
 <meta name="description" content="Practice IELTS and Goethe oral exams with AI evaluation. Record your answer and get official rubric feedback.">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="canonical" href="https://lexiloop.netlify.app/oral.html">
+<link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://lexicoil.com/oral.html">
+<meta property="og:url" content="https://lexicoil.com/oral.html">
+<meta property="og:site_name" content="LexiCoil">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/lexicoil-design-system.css">
+<script>
+(function(){
+  try{
+    var t=localStorage.getItem('theme')||localStorage.getItem('lc_theme')||'light';
+    document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
+  }catch(e){}
+})();
+</script>
 <style>
-:root {
-  --bg:#0E0E10; --bg2:#16161A; --bg3:#1E1E24;
-  --surface:#242429; --surface2:#2C2C33;
-  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.14);
-  --text:#F2F2F0; --text2:#9A9A94; --text3:#5A5A56;
-  --accent:#E8C547; --accent2:#F0D876; --accent-dim:rgba(232,197,71,0.12);
-  --red:#E85D5D; --red-bg:rgba(232,93,93,0.10);
-  --green:#5DE8A0; --green-bg:rgba(93,232,160,0.10);
-  --blue:#5DB8E8; --blue-bg:rgba(93,184,232,0.10);
-  --purple:#A78BFA; --purple-bg:rgba(167,139,250,0.10);
-  --orange:#F97316; --orange-bg:rgba(249,115,22,0.10);
-  --r:10px; --r-lg:16px;
-}
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+*,*::before,*::after { margin:0; padding:0 }
 html { scroll-behavior:smooth }
-body { font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden }
-::-webkit-scrollbar { width:4px } ::-webkit-scrollbar-track { background:var(--bg) } ::-webkit-scrollbar-thumb { background:var(--surface2); border-radius:2px }
+body { font-family:var(--lc-font); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden }
+[data-theme='dark']{--surface:#242429;--surface2:#2C2C33}
 
 /* ── LAYOUT ── */
 .app { max-width:760px; margin:0 auto; padding:0 24px 120px }
 header { padding:26px 0 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:.5px solid var(--border) }
 .logo { display:flex; align-items:center; gap:10px }
-.logo-mark { font-family:'Instrument Serif',serif; font-size:22px; font-style:italic; color:var(--accent); letter-spacing:-1px }
+.logo-mark { font-family:var(--lc-font),serif; font-size:22px; font-style:italic; color:var(--accent); letter-spacing:-1px }
 .logo-name { font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase }
 .logo-sep { width:1px; height:18px; background:var(--border2); margin:0 4px }
 .logo-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:100px; background:var(--purple-bg); color:var(--purple); border:.5px solid rgba(167,139,250,.25); letter-spacing:.06em; text-transform:uppercase }
@@ -41,7 +39,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 /* ── EXAM CONFIG ── */
 #configScreen { padding:40px 0; animation:fadeUp .4s ease }
 .screen-eyebrow { font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text3); margin-bottom:10px }
-.screen-title { font-family:'Instrument Serif',serif; font-size:36px; margin-bottom:6px }
+.screen-title { font-family:var(--lc-font),serif; font-size:36px; margin-bottom:6px }
 .screen-title em { color:var(--accent); font-style:italic }
 .screen-sub { font-size:13px; color:var(--text2); margin-bottom:32px; font-weight:400; line-height:1.7 }
 .config-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px }
@@ -55,8 +53,8 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .levels-row { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap }
 .level-pill { font-size:12px; font-weight:700; padding:8px 16px; border-radius:100px; border:.5px solid var(--border2); background:var(--bg2); cursor:pointer; transition:all .2s; color:var(--text2) }
 .level-pill:hover { border-color:var(--accent); color:var(--accent) }
-.level-pill.selected { background:var(--accent); color:#000; border-color:var(--accent) }
-.btn-start-oral { width:100%; background:var(--accent); color:#000; border:none; border-radius:var(--r); padding:15px; font-family:'Syne',sans-serif; font-size:15px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px }
+.level-pill.selected { background:var(--accent); color:#fff; border-color:var(--accent) }
+.btn-start-oral { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--r); padding:15px; font-family:var(--lc-font),sans-serif; font-size:15px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:10px }
 .btn-start-oral:hover { background:var(--accent2); transform:translateY(-1px) }
 .btn-start-oral:disabled { opacity:.35; cursor:not-allowed; transform:none }
 
@@ -68,7 +66,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .tag-exam { background:var(--purple-bg); color:var(--purple); border:.5px solid rgba(167,139,250,.25) }
 .tag-level { background:var(--accent-dim); color:var(--accent); border:.5px solid rgba(232,197,71,.25) }
 .tag-task { background:var(--blue-bg); color:var(--blue); border:.5px solid rgba(93,184,232,.25) }
-.btn-cancel { background:none; border:.5px solid var(--border2); border-radius:8px; padding:6px 14px; font-family:'Syne',sans-serif; font-size:12px; font-weight:600; color:var(--text3); cursor:pointer; transition:all .2s }
+.btn-cancel { background:none; border:.5px solid var(--border2); border-radius:8px; padding:6px 14px; font-family:var(--lc-font),sans-serif; font-size:12px; font-weight:600; color:var(--text3); cursor:pointer; transition:all .2s }
 .btn-cancel:hover { color:var(--text); border-color:var(--border2) }
 
 /* task card */
@@ -102,7 +100,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .wave-bar:nth-child(6) { animation-delay:.1s }
 .wave-bar:nth-child(7) { animation-delay:0s }
 .recorder-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
-.btn-rec { padding:10px 24px; border-radius:100px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; border:none }
+.btn-rec { padding:10px 24px; border-radius:100px; font-family:var(--lc-font),sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; border:none }
 .btn-rec-start { background:var(--red); color:#fff }
 .btn-rec-start:hover { opacity:.9 }
 .btn-rec-stop { background:var(--surface); color:var(--text); border:.5px solid var(--border2) }
@@ -120,6 +118,13 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 
 /* browser warning */
 .browser-warn { background:var(--orange-bg); border:.5px solid rgba(249,115,22,.3); border-radius:var(--r); padding:12px 16px; font-size:12px; color:var(--orange); margin-bottom:16px; display:none }
+.corr-diff mark { background:rgba(249,115,22,.25); color:var(--orange); border-radius:2px; padding:0 2px }
+#pdf-export-container { display:none; position:absolute; left:-9999px; top:0; width:210mm; background:#fff; color:#111; padding:40px; font-family:Georgia,serif }
+@media print {
+  body>*:not(#pdf-export-container) { display:none!important }
+  #pdf-export-container { display:block!important; position:static; left:0; width:100% }
+  .pdf-page-break { page-break-before:always }
+}
 
 /* ── RESULTS SCREEN ── */
 #resultsScreen { display:none; padding:32px 0; animation:fadeUp .4s ease }
@@ -135,7 +140,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .score-big.fail { color:var(--red) }
 .score-denom { font-size:12px; color:var(--text3); margin-top:2px }
 .results-level { font-size:13px; font-weight:700; color:var(--text2); margin-bottom:6px }
-.results-summary { font-size:14px; color:var(--text2); font-style:italic; font-weight:400; line-height:1.7; max-width:520px; margin:0 auto; font-family:'Instrument Serif',serif }
+.results-summary { font-size:14px; color:var(--text2); font-style:italic; font-weight:400; line-height:1.7; max-width:520px; margin:0 auto; font-family:var(--lc-font),serif }
 
 .criteria-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px }
 .criteria-card { background:var(--bg2); border:.5px solid var(--border); border-radius:var(--r-lg); padding:18px }
@@ -164,9 +169,9 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
 .tr-text { font-size:13px; color:var(--text2); line-height:1.8; font-weight:400 }
 
 .results-actions { display:flex; gap:10px; flex-wrap:wrap }
-.btn-retry { flex:1; background:var(--surface); border:.5px solid var(--border2); border-radius:var(--r); padding:13px; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--text); cursor:pointer; transition:all .2s; text-align:center }
+.btn-retry { flex:1; background:var(--surface); border:.5px solid var(--border2); border-radius:var(--r); padding:13px; font-family:var(--lc-font),sans-serif; font-size:13px; font-weight:700; color:var(--text); cursor:pointer; transition:all .2s; text-align:center }
 .btn-retry:hover { background:var(--surface2) }
-.btn-new { flex:2; background:var(--accent); color:#000; border:none; border-radius:var(--r); padding:13px; font-family:'Syne',sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all .2s; text-align:center }
+.btn-new { flex:2; background:var(--accent); color:#000; border:none; border-radius:var(--r); padding:13px; font-family:var(--lc-font),sans-serif; font-size:13px; font-weight:800; cursor:pointer; transition:all .2s; text-align:center }
 .btn-new:hover { background:var(--accent2) }
 
 /* ── LOADING ── */
@@ -199,7 +204,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
   <header>
     <a href="index.html" class="logo" style="text-decoration:none;color:inherit">
       <span class="logo-mark">ℒ</span>
-      <span class="logo-name">LexiLoop</span>
+      <span class="logo-name">LexiCoil</span>
       <div class="logo-sep"></div>
       <span style="font-size:11px;color:var(--text3);letter-spacing:.06em">Oral Mode</span>
     </a>
@@ -212,7 +217,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
       <div class="screen-eyebrow">AI oral exam</div>
       <h1 class="screen-title">Choose your <em>exam</em></h1>
       <p class="screen-sub">Claude acts as an official examiner and evaluates your oral production using each certification's real scoring rubric.</p>
-      <p style="font-size:12px;color:var(--text3);margin:-20px 0 28px;line-height:1.6">Private beta — no account needed. Feedback: <a href="mailto:marcosdadra@gmail.com?subject=LexiLoop%20Beta%20Feedback" style="color:var(--accent);text-decoration:none;font-weight:700">marcosdadra@gmail.com</a></p>
+      <p style="font-size:12px;color:var(--text3);margin:-20px 0 28px;line-height:1.6">Questions? <a href="mailto:contact@lexicoil.com?subject=LexiCoil%20Inquiry" style="color:var(--accent);text-decoration:none;font-weight:700">contact@lexicoil.com</a></p>
 
       <div class="config-grid" id="examGrid">
         <div class="config-card" data-exam="IELTS" onclick="selectExam(this)">
@@ -262,7 +267,7 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
     </div>
 
     <div class="browser-warn" id="browserWarn">
-      ⚠ Your browser does not support the Web Speech API. Use Chrome or Edge for automatic capture, or type your answer directly below.
+      Voice recognition works best in Chrome or Safari. You can also type your answer in the transcript box below.
     </div>
 
     <div class="recorder-zone">
@@ -336,14 +341,21 @@ header { padding:26px 0 22px; display:flex; align-items:center; justify-content:
       <div class="tr-text" id="resTranscript"></div>
     </div>
 
+    <div class="feedback-block" id="correctedBlock" style="display:none">
+      <div class="fb-title"><span style="color:var(--accent)">✎</span> Corrected version</div>
+      <div class="tr-text corr-diff" id="resCorrected"></div>
+    </div>
+
     <div class="results-actions">
       <button class="btn-retry" onclick="retryExam()">🔄 Retry same task</button>
+      <button class="btn-new" onclick="downloadOralPdf()">📄 Export feedback as PDF<span id="oralPdfProLbl"></span></button>
       <button class="btn-new" onclick="goConfig()">New task →</button>
     </div>
   </div>
 
 </div><!-- /app -->
 
+<script src="js/uiToast.js?v=1"></script>
 <script src="js/claudeClient.js"></script>
 <script>
 // ══════════════════════════════════════════
@@ -415,9 +427,12 @@ const TASKS = {
 // INIT
 // ══════════════════════════════════════════
 function init() {
-  if (!S.hasSpeechAPI) {
+  const isFirefox = /firefox/i.test(navigator.userAgent);
+  if (!S.hasSpeechAPI || isFirefox) {
     document.getElementById('browserWarn').style.display = 'block';
   }
+  const pdfLbl = document.getElementById('oralPdfProLbl');
+  if (pdfLbl && !isOralPro()) pdfLbl.textContent = ' (Pro)';
 }
 
 // ══════════════════════════════════════════
@@ -572,32 +587,24 @@ async function evaluate() {
   show('loadingScreen');
   animateLoaderSteps();
 
-  const systemPrompt = `You are a certified official examiner for the ${S.exam} exam at ${S.level} level.
-Your task is to evaluate a candidate's oral production.
+  const board = S.exam === 'Goethe' ? 'Goethe-Institut' : 'Cambridge Assessment English';
+  const rubric = S.exam === 'Goethe' ? `Goethe ${S.level} Sprechen` : `Cambridge ${S.level} Speaking`;
+  const systemPrompt = `You are a certified ${board} examiner evaluating a spoken response.
+The candidate is at level ${S.level}.
+Evaluate strictly according to the official ${rubric} rubric.
+Reply ONLY with valid JSON.`;
 
-The candidate was asked to respond to this task:
-"${S.task.text}"
+  const userPrompt = `Task: ${S.task.text}
+Candidate's transcript:
+${transcript}
 
-This is the transcript of what the candidate said:
-"${transcript}"
+Official model answer for reference: (not provided — use rubric standards for ${S.level})
 
-Evaluate using the official ${S.exam} rubric. Reply ONLY with a valid JSON object — no text before or after, no markdown code blocks. The JSON must have exactly this structure:
-{
-  "scores": {
-    "coherencia": <number 0-25>,
-    "gramatica": <number 0-25>,
-    "vocabulario": <number 0-25>,
-    "fluidez": <number 0-25>
-  },
-  "total": <number 0-100>,
-  "nivel_detectado": "<A1|A2|B1|B2|C1|C2>",
-  "errores": ["<specific error 1>", "<specific error 2>", "<specific error 3>"],
-  "mejoras": ["<priority improvement 1>", "<priority improvement 2>", "<priority improvement 3>"],
-  "resumen": "<Professional examiner feedback in English, 1-2 sentences>"
-}`;
+Evaluate and return this JSON:
+{"criteria":[{"name":"Task Achievement","score":0-5,"comment":"..."},{"name":"Vocabulary Range","score":0-5,"comment":"..."},{"name":"Grammar Accuracy","score":0-5,"comment":"..."},{"name":"Coherence & Fluency","score":0-5,"comment":"..."}],"totalScore":0-100,"passed":true,"overallFeedback":"2-3 sentences of personalized feedback","strongPoints":["point 1","point 2"],"improvements":["improvement 1","improvement 2"],"correctedVersion":"A corrected/improved version of what the candidate said"}`;
 
   try {
-    const raw = await callAI(systemPrompt, 1000);
+    const raw = await callAI(systemPrompt + '\n\n' + userPrompt, 1200, { consumeQuota: true });
     const clean = raw.replace(/```json|```/g, '').trim();
     const result = JSON.parse(clean);
     renderResults(result, transcript);
@@ -627,57 +634,102 @@ function animateLoaderSteps() {
 // ══════════════════════════════════════════
 // RENDER RESULTS
 // ══════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function highlightDiff(original,corrected){
+  const o=String(original||'').split(/\s+/),c=String(corrected||'').split(/\s+/);
+  return c.map((w,i)=>w.toLowerCase()!==((o[i]||'').toLowerCase())?`<mark>${esc(w)}</mark>`:esc(w)).join(' ');
+}
+
 function renderResults(r, transcript) {
-  const total = Math.round(r.total);
+  S.lastOralResult = { r, transcript };
+  const total = Math.round(r.totalScore ?? r.total ?? 0);
   const grade = total >= 70 ? 'pass' : total >= 50 ? 'mid' : 'fail';
 
   document.getElementById('resExamName').textContent = `${S.exam} ${S.level} — Oral production`;
   document.getElementById('scoreBig').textContent = total;
   document.getElementById('scoreBig').className = `score-big ${grade}`;
   document.getElementById('scoreRing').className = `results-score-ring ${grade}`;
-  document.getElementById('resLevel').textContent = `Detected level: ${r.nivel_detectado || S.level}`;
-  document.getElementById('resSummary').textContent = r.resumen || '';
+  document.getElementById('resLevel').textContent = r.passed === false ? 'Below pass threshold' : r.passed ? 'Pass standard met' : `Level ${S.level}`;
+  document.getElementById('resSummary').textContent = r.overallFeedback || r.resumen || '';
   document.getElementById('resTranscript').textContent = transcript;
 
-  // Criteria cards
-  const criteria = [
-    { key:'coherencia', label:'Coherence' },
-    { key:'gramatica', label:'Grammar' },
-    { key:'vocabulario', label:'Vocabulary' },
-    { key:'fluidez', label:'Fluency' }
+  const criteria = r.criteria || [
+    { name:'Coherence', score: Math.round((r.scores?.coherencia||0)/5), comment:'' },
+    { name:'Grammar', score: Math.round((r.scores?.gramatica||0)/5), comment:'' },
+    { name:'Vocabulary', score: Math.round((r.scores?.vocabulario||0)/5), comment:'' },
+    { name:'Fluency', score: Math.round((r.scores?.fluidez||0)/5), comment:'' }
   ];
   const grid = document.getElementById('criteriaGrid');
   grid.innerHTML = criteria.map(c => {
-    const val = Math.round(r.scores?.[c.key] || 0);
-    const g = val >= 18 ? 'high' : val >= 12 ? 'mid' : 'low';
-    const pct = (val / 25 * 100).toFixed(0);
+    const val = Math.round(c.score || 0);
+    const g = val >= 4 ? 'high' : val >= 3 ? 'mid' : 'low';
+    const pct = (val / 5 * 100).toFixed(0);
     return `<div class="criteria-card">
       <div class="crit-header">
-        <span class="crit-name">${c.label}</span>
-        <span class="crit-score ${g}">${val}<span style="font-size:11px;font-weight:400;color:var(--text3)">/25</span></span>
+        <span class="crit-name">${esc(c.name)}</span>
+        <span class="crit-score ${g}">${val}<span style="font-size:11px;font-weight:400;color:var(--text3)">/5</span></span>
       </div>
       <div class="crit-bar-track"><div class="crit-bar-fill fill-${g}" style="width:0%" data-pct="${pct}"></div></div>
+      ${c.comment?`<p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">${esc(c.comment)}</p>`:''}
     </div>`;
   }).join('');
 
-  // Animate bars after render
   setTimeout(() => {
-    document.querySelectorAll('.crit-bar-fill').forEach(b => {
-      b.style.width = b.dataset.pct + '%';
-    });
+    document.querySelectorAll('.crit-bar-fill').forEach(b => { b.style.width = b.dataset.pct + '%'; });
   }, 80);
 
-  // Errors
-  document.getElementById('erroresList').innerHTML = (r.errores || []).map(e =>
-    `<div class="fb-item"><div class="fb-dot dot-red"></div>${e}</div>`
+  const errors = r.improvements || r.errores || [];
+  const strengths = r.strongPoints || [];
+  document.getElementById('erroresList').innerHTML = errors.map(e =>
+    `<div class="fb-item"><div class="fb-dot dot-red"></div>${esc(e)}</div>`
+  ).join('') || '<div class="fb-item" style="color:var(--text3)">No major issues flagged.</div>';
+
+  document.getElementById('mejorasList').innerHTML = (strengths.length ? strengths : (r.mejoras || [])).map(m =>
+    `<div class="fb-item"><div class="fb-dot dot-green"></div>${esc(m)}</div>`
   ).join('');
 
-  // Improvements
-  document.getElementById('mejorasList').innerHTML = (r.mejoras || []).map(m =>
-    `<div class="fb-item"><div class="fb-dot dot-green"></div>${m}</div>`
-  ).join('');
+  const corrBlock = document.getElementById('correctedBlock');
+  const corrEl = document.getElementById('resCorrected');
+  if (r.correctedVersion) {
+    corrBlock.style.display = 'block';
+    corrEl.innerHTML = highlightDiff(transcript, r.correctedVersion);
+  } else {
+    corrBlock.style.display = 'none';
+  }
 
   show('resultsScreen');
+}
+
+function isOralPro() {
+  try {
+    const q = JSON.parse(localStorage.getItem('lc_quota') || '{}');
+    if (q.plan === 'pro') return true;
+    const u = JSON.parse(localStorage.getItem('lc_user') || '{}');
+    return u.plan === 'pro';
+  } catch (_) {
+    return false;
+  }
+}
+
+function downloadOralPdf() {
+  if (!isOralPro()) {
+    if (typeof showToast === 'function') showToast('PDF export is a Pro feature. Upgrade at lexicoil.com.', 'warn', 4500);
+    else alert('PDF export is a Pro feature. Upgrade at lexicoil.com.');
+    return;
+  }
+  const { r, transcript } = S.lastOralResult || {};
+  if (!r) return;
+  const total = Math.round(r.totalScore ?? r.total ?? 0);
+  let html = `<div class="pdf-doc"><h1>LexiCoil Oral Feedback</h1><p>${new Date().toLocaleDateString()}</p><p>${esc(S.exam)} ${esc(S.level)}</p><p><strong>Score: ${total}/100</strong></p><p>${esc(r.overallFeedback||'')}</p>`;
+  (r.criteria||[]).forEach(c=>{ html+=`<p>${esc(c.name)}: ${c.score}/5 — ${esc(c.comment)}</p>`; });
+  html += `<p><strong>Your answer:</strong> ${esc(transcript)}</p>`;
+  if (r.correctedVersion) html += `<p><strong>Corrected:</strong> ${esc(r.correctedVersion)}</p>`;
+  html += '</div>';
+  const box = document.getElementById('pdf-export-container');
+  box.innerHTML = html;
+  box.style.display = 'block';
+  window.print();
+  setTimeout(()=>{ box.innerHTML=''; box.style.display='none'; }, 500);
 }
 
 function retryExam() {
@@ -698,5 +750,6 @@ function show(id) {
 // ══════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', init);
 </script>
+<div id="pdf-export-container"></div>
 </body>
 </html>

@@ -8,7 +8,7 @@ function aiAuthHeaders() {
 }
 
 async function callAI(prompt, maxTokens = 6000, options = {}) {
-  const { consumeQuota = true, timeoutMs = 45000 } = options;
+  const { consumeQuota = true, timeoutMs = 35000, examGeneration = false } = options;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -17,7 +17,7 @@ async function callAI(prompt, maxTokens = 6000, options = {}) {
     res = await fetch(CLAUDE_ENDPOINT, {
       method: "POST",
       headers: aiAuthHeaders(),
-      body: JSON.stringify({ prompt, maxTokens, consumeQuota }),
+      body: JSON.stringify({ prompt, maxTokens, consumeQuota, examGeneration }),
       signal: controller.signal,
     });
   } catch (err) {
@@ -32,10 +32,16 @@ async function callAI(prompt, maxTokens = 6000, options = {}) {
   clearTimeout(timer);
 
   const raw = await res.text();
+  const looksLikeHtml = /<!DOCTYPE|<html/i.test(raw || "");
   let data = {};
   try {
     data = raw ? JSON.parse(raw) : {};
   } catch {
+    if (res.status === 504 || looksLikeHtml) {
+      const e = new Error("Exam generation timed out on the server. Please try again.");
+      e.code = "gateway_timeout";
+      throw e;
+    }
     const snippet = raw ? raw.slice(0, 120).replace(/\s+/g, " ") : "";
     throw new Error(
       res.ok
@@ -45,12 +51,27 @@ async function callAI(prompt, maxTokens = 6000, options = {}) {
   }
 
   if (!res.ok) {
+    if (res.status === 504 || (looksLikeHtml && res.status >= 500)) {
+      const e = new Error("Exam generation timed out on the server. Please try again.");
+      e.code = "gateway_timeout";
+      throw e;
+    }
     if (res.status === 429 && data.error === "quota_exceeded") {
       const e = new Error("quota_exceeded");
       e.code = "quota_exceeded";
       e.used = data.used;
       e.max = data.max;
       e.plan = data.plan;
+      throw e;
+    }
+    if (res.status === 422 && data.error === 'exam_low_quality') {
+      const e = new Error('exam_low_quality');
+      e.code = 'exam_low_quality';
+      throw e;
+    }
+    if (res.status === 422 && data.error === 'exam_invalid') {
+      const e = new Error(data.message || 'exam_invalid');
+      e.code = 'exam_invalid';
       throw e;
     }
     if (res.status === 502 || res.status === 503) {
@@ -70,11 +91,62 @@ async function callAI(prompt, maxTokens = 6000, options = {}) {
     throw new Error(data.error || "Empty AI response");
   }
 
+  if (examGeneration && data.model) {
+    console.log("[claude] exam generation model:", data.model);
+  }
+
   if (typeof data.used === "number" && typeof window.applyServerQuota === "function") {
     window.applyServerQuota(data);
   }
 
   return data.text;
+}
+
+async function confirmStripePurchase(sessionId) {
+  const res = await fetch("/.netlify/functions/stripe-confirm", {
+    method: "POST",
+    headers: aiAuthHeaders(),
+    body: JSON.stringify({ session_id: sessionId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const e = new Error(data.error || "stripe_confirm_failed");
+    e.code = data.error || "stripe_confirm_failed";
+    throw e;
+  }
+  if (data.user && typeof window.applyUserFromServer === "function") {
+    window.applyUserFromServer(data.user);
+  } else if (data.user?.quota && typeof window.applyServerQuota === "function") {
+    window.applyServerQuota({
+      used: data.user.quota.used,
+      max: data.user.quota.max,
+      plan: data.user.plan,
+    });
+  }
+  return data;
+}
+
+async function commitExamQuota() {
+  const res = await fetch(CLAUDE_ENDPOINT, {
+    method: "POST",
+    headers: aiAuthHeaders(),
+    body: JSON.stringify({ quotaOnly: true }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 429 && data.error === "quota_exceeded") {
+      const e = new Error("quota_exceeded");
+      e.code = "quota_exceeded";
+      e.used = data.used;
+      e.max = data.max;
+      e.plan = data.plan;
+      throw e;
+    }
+    throw new Error(data.error || "Could not register exam usage");
+  }
+  if (typeof data.used === "number" && typeof window.applyServerQuota === "function") {
+    window.applyServerQuota({ used: data.used, max: data.max, plan: data.plan });
+  }
 }
 
 async function fetchExamFromPool(lang, level) {
@@ -86,16 +158,30 @@ async function fetchExamFromPool(lang, level) {
 }
 
 async function saveExamToPool(lang, level, topic, exam) {
+  const t = String(topic || "").trim();
+  if (/personal\s*vocabulary|^personal:/i.test(t)) return;
+  if (exam?.vocabPersonal || exam?.vocabWords?.length) return;
+  if (typeof ExamValidator !== "undefined") {
+    const check = new ExamValidator().validate(exam);
+    if (!check.valid) {
+      console.warn("[pool] rejected invalid exam:", check.errors);
+      return;
+    }
+  }
   const token = localStorage.getItem("lc_token");
   const headers = { "Content-Type": "application/json" };
   if (token && localStorage.getItem("lc_guest") !== "1") {
     headers.Authorization = `Bearer ${token}`;
   }
-  await fetch("/.netlify/functions/exam-pool", {
+  const res = await fetch("/.netlify/functions/exam-pool", {
     method: "POST",
     headers,
-    body: JSON.stringify({ lang, level, topic, exam }),
+    body: JSON.stringify({ lang, level, topic: t, exam }),
   });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "pool_save_failed");
+  }
 }
 
 async function startStripeCheckout() {

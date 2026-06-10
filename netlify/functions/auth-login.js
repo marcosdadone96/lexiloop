@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { getStoreForEvent } = require('./lib/blobStore.js');
 const {
@@ -7,6 +8,7 @@ const {
   normalizeEmail,
   userKey,
   signAuthToken,
+  getTokenVersion,
 } = require('./lib/authLib.js');
 const { corsHeaders, parseJsonBody, jsonResponse } = require('./lib/http.js');
 
@@ -34,20 +36,52 @@ exports.handler = async (event) => {
   }
 
   const store = getStoreForEvent(event);
+
+  const ip = (event.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  const ipHash = crypto
+    .createHash('sha256')
+    .update(ip + (process.env.AUTH_JWT_SECRET || ''))
+    .digest('hex')
+    .slice(0, 24);
+  const rateLimitKey = `ratelimit_login:${ipHash}`;
+
+  let rl = null;
+  try {
+    rl = await store.get(rateLimitKey, { type: 'json' });
+  } catch (_) {}
+
+  if (rl && rl.count >= 10 && Date.now() < rl.resetAt) {
+    return jsonResponse(429, cors, { error: 'too_many_attempts' });
+  }
+
   let user;
   try {
     user = await store.get(userKey(email), { type: 'json' });
   } catch (_) {
     user = null;
   }
+
   if (!user || !user.passwordHash) {
-    return jsonResponse(401, cors, { error: 'bad_credentials' });
-  }
-  if (!bcrypt.compareSync(password, user.passwordHash)) {
+    await store.setJSON(rateLimitKey, {
+      count: (rl?.count || 0) + 1,
+      resetAt: Date.now() + 15 * 60 * 1000,
+    });
     return jsonResponse(401, cors, { error: 'bad_credentials' });
   }
 
-  const session = signAuthToken(email, user.name);
+  if (!bcrypt.compareSync(password, user.passwordHash)) {
+    await store.setJSON(rateLimitKey, {
+      count: (rl?.count || 0) + 1,
+      resetAt: Date.now() + 15 * 60 * 1000,
+    });
+    return jsonResponse(401, cors, { error: 'bad_credentials' });
+  }
+
+  try {
+    await store.delete(rateLimitKey);
+  } catch (_) {}
+
+  const session = signAuthToken(email, user.name, getTokenVersion(user));
   return jsonResponse(200, cors, {
     token: session.token,
     expiresAt: session.expiresAt,

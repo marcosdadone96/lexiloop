@@ -1,0 +1,109 @@
+{
+  "id": "dele",
+  "name": "Instituto Cervantes (DELE)",
+  "languageId": "spanish",
+  "levels": {
+    "A1": {
+      "certificate": "DELE A1",
+      "totalMinutes": 90,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 45, "parts": 4 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 25, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 25, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 15, "parts": 2 }
+      ],
+      "taskTypes": {
+        "reading": ["multiple_choice", "true_false", "matching"],
+        "listening": ["multiple_choice", "true_false"],
+        "writing": ["form", "short_text"],
+        "speaking": ["monologue", "dialogue"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    },
+    "A2": {
+      "certificate": "DELE A2",
+      "totalMinutes": 105,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 60, "parts": 5 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 35, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 50, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 15, "parts": 2 }
+      ],
+      "taskTypes": {
+        "reading": ["multiple_choice", "matching"],
+        "listening": ["multiple_choice", "note_taking"],
+        "writing": ["email", "short_composition"],
+        "speaking": ["monologue", "interaction"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    },
+    "B1": {
+      "certificate": "DELE B1",
+      "totalMinutes": 150,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 70, "parts": 4 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 40, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 60, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 15, "parts": 2 }
+      ],
+      "taskTypes": {
+        "reading": ["multiple_choice", "true_false", "matching"],
+        "listening": ["multiple_choice", "note_taking"],
+        "writing": ["email", "opinion_text"],
+        "speaking": ["presentation", "discussion"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    },
+    "B2": {
+      "certificate": "DELE B2",
+      "totalMinutes": 175,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 70, "parts": 4 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 40, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 80, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 20, "parts": 2 }
+      ],
+      "taskTypes": {
+        "reading": ["multiple_choice", "gap_fill", "matching"],
+        "listening": ["multiple_choice", "note_taking"],
+        "writing": ["article", "formal_letter"],
+        "speaking": ["monologue", "debate"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    },
+    "C1": {
+      "certificate": "DELE C1",
+      "totalMinutes": 210,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 75, "parts": 5 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 50, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 80, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 20, "parts": 3 }
+      ],
+      "taskTypes": {
+        "reading": ["complex_multiple_choice", "inference"],
+        "listening": ["note_taking", "multiple_choice"],
+        "writing": ["academic_essay", "analysis"],
+        "speaking": ["presentation", "discussion"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    },
+    "C2": {
+      "certificate": "DELE C2",
+      "totalMinutes": 225,
+      "modules": [
+        { "id": "reading", "title": "Comprensión de lectura", "minutes": 75, "parts": 5 },
+        { "id": "listening", "title": "Comprensión auditiva", "minutes": 50, "parts": 4 },
+        { "id": "writing", "title": "Expresión e interacción escritas", "minutes": 80, "parts": 2 },
+        { "id": "speaking", "title": "Expresión e interacción orales", "minutes": 20, "parts": 3 }
+      ],
+      "taskTypes": {
+        "reading": ["literary_analysis", "argumentation"],
+        "listening": ["lecture", "debate"],
+        "writing": ["specialised_text", "summary_argument"],
+        "speaking": ["formal_presentation", "debate"]
+      },
+      "scoring": { "passPercent": 60, "perModule": true }
+    }
+  }
+}

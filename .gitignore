@@ -1,8 +1,9 @@
-node_modules/
-.netlify/
+node_modules
 .env
-.env.local
-*.log
-.DS_Store
-Thumbs.db
-!.env.example
+dist
+landing/node_modules
+landing/.next
+landing/out
+
+# Local Netlify folder
+.netlify

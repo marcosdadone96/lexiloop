@@ -1,0 +1,9 @@
+Implement generators.
+
+ExamGenerator
+ExerciseGenerator
+FlashcardGenerator
+StoryGenerator
+DialogueGenerator
+
+All must consume ContentSpecification.

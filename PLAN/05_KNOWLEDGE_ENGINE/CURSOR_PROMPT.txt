@@ -1,0 +1,12 @@
+Implement KnowledgeEngine.
+
+Input:
+
+Language
+Level
+Provider
+TargetWords
+
+Output:
+
+Complete ContentSpecification

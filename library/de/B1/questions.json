@@ -1,0 +1,1003 @@
+{
+  "meta": {
+    "language": "de",
+    "level": "B1",
+    "version": 2,
+    "generatedAt": "2026-06-09",
+    "examId": "goethe-b1-bank-v2",
+    "examType": "goethe",
+    "mode": "library",
+    "sourceBank": "de_B1.json"
+  },
+  "passages": [
+    {
+      "id": "de-b1-p-env",
+      "module": "lesen",
+      "title": "Stadtgärten und Nachhaltigkeit",
+      "text": "In München, Berlin und Hamburg entstehen immer mehr Stadtgärten, weil Stadtbewohner frisches Gemüse selbst anbauen möchten. Viele Teilnehmer berichten, dass sie durch die Gärten Nachbarn kennenlernen und dass ihre Kinder erfahren, wie Pflanzen wachsen. Ökologisch verbessern die Gärten das Mikroklima, doch die Nachfrage übersteigt das Angebot: Wartelisten sind oft mehrere Jahre lang."
+    },
+    {
+      "id": "de-b1-p-work",
+      "module": "lesen",
+      "title": "Stellenanzeige: Kundenservice",
+      "text": "Unser Online-Shop sucht ab September eine Mitarbeiterin oder einen Mitarbeiter für den Kundenservice in Teilzeit (20 Stunden/Woche). Voraussetzungen: sicherer Umgang mit E-Mail und Telefon, Deutsch B2, Erfahrung im Einzelhandel von Vorteil. Bewerbungen werden nur online entgegengenommen. Laura plant, sich noch diese Woche zu bewerben, weil sie nach ihrer Elternzeit wieder arbeiten möchte."
+    },
+    {
+      "id": "de-b1-p-health",
+      "module": "lesen",
+      "title": "Gesund essen im Alltag",
+      "text": "Dr. Keller erklärt, dass viele Beschwerden mit unregelmäßigen Mahlzeiten zusammenhängen. Sie empfiehlt zuerst mehr Bewegung und drei ausgewogene Mahlzeiten pro Tag. Erst wenn sich der Zustand nicht verbessert, würde sie weitere Untersuchungen vorschlagen. Besonders wichtig sei, dass Patienten weniger zuckerhaltige Getränke trinken."
+    },
+    {
+      "id": "de-b1-p-travel",
+      "module": "horen",
+      "title": "Bahnhofsansage",
+      "text": "Achtung, liebe Fahrgäste: Der Intercity nach Basel SBB, planmäßige Abfahrt 14:32 Uhr, fällt heute aus. Grund ist ein technisches Problem an der Lokomotive. Fahrgäste mit gültiger Fahrkarte können kostenlos den nächsten Zug um 15:05 Uhr nutzen. Wir bitten um Entschuldigung."
+    },
+    {
+      "id": "de-b1-p-edu",
+      "module": "horen",
+      "title": "Podcast: Lernen neben dem Job",
+      "text": "Moderatorin: Viele Berufstätige nutzen heute Abendkurse online, weil sie flexibel von zu Hause lernen können. Expertin: Wichtig ist, dass man sich feste Lernzeiten reserviert, sonst verschiebt man die Aufgaben ständig. Moderatorin: Welche Kurse sind besonders gefragt? Expertin: Sprachkurse und digitale Kompetenzen stehen ganz oben auf der Liste."
+    }
+  ],
+  "questions": [
+    {
+      "id": "de-b1-l-p1-q1",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Lesen Sie den Text. Was ist laut Autor ein Hauptgrund für den Boom der Stadtgärten?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Der Text nennt ausdrücklich den Wunsch, die Herkunft des Essens zu kennen.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "environment"
+      ],
+      "vocabularyTags": [
+        "Stadtgarten",
+        "Nachhaltigkeit"
+      ],
+      "difficulty": 3,
+      "teil": 1,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "passageId": "de-b1-p-env",
+      "options": [
+        "a) Viele Menschen möchten selbst sehen, woher ihr Essen kommt.",
+        "b) Stadtgärten sind gesetzlich vorgeschrieben.",
+        "c) Dächer sind billiger als Ackerflächen.",
+        "d) Supermärkte verbieten regionales Gemüse."
+      ]
+    },
+    {
+      "id": "de-b1-l-p1-q2",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Welche Aussage stimmt mit dem Text überein?",
+      "correct": "c",
+      "correctAnswer": "c",
+      "explanation": "Wartelisten über mehrere Jahre zeigen, dass die Nachfrage das Angebot übersteigt.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "environment",
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Nachhaltigkeit"
+      ],
+      "difficulty": 4,
+      "teil": 1,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Stadtgärten verschlechtern das Stadtklima.",
+        "b) Für Kinder haben die Gärten keinen Lernwert.",
+        "c) Die Nachfrage nach Parzellen ist höher als das Angebot.",
+        "d) Stadtgärten gibt es nur auf dem Land."
+      ]
+    },
+    {
+      "id": "de-b1-l-p1-q3",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Was wird im Text als positiv für Kinder beschrieben?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Kinder erfahren laut Text, wie Pflanzen wachsen.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "education",
+        "environment"
+      ],
+      "vocabularyTags": [
+        "Stadtgarten"
+      ],
+      "difficulty": 2,
+      "teil": 1,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Sie müssen weniger Hausaufgaben machen.",
+        "b) Sie lernen, wie Pflanzen wachsen.",
+        "c) Sie dürfen keine Elektronik nutzen.",
+        "d) Sie bekommen kostenloses Obst vom Markt."
+      ]
+    },
+    {
+      "id": "de-b1-l-p1-q4",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "In welcher Stadt werden Stadtgärten im Text nicht genannt?",
+      "correct": "c",
+      "correctAnswer": "c",
+      "explanation": "Genannt werden München, Berlin und Hamburg — nicht Köln.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "environment"
+      ],
+      "vocabularyTags": [
+        "Stadtgarten"
+      ],
+      "difficulty": 3,
+      "teil": 1,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Berlin",
+        "b) Hamburg",
+        "c) Köln",
+        "d) München"
+      ]
+    },
+    {
+      "id": "de-b1-l-p2-q1",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Warum bewirbt sich Laura laut Anzeige?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Die Anzeige betrifft eine Teilzeitstelle im Kundenservice.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "work"
+      ],
+      "vocabularyTags": [
+        "Bewerbung"
+      ],
+      "difficulty": 4,
+      "teil": 2,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "passageId": "de-b1-p-work",
+      "options": [
+        "a) Für eine Teilzeitstelle im Kundenservice.",
+        "b) Für ein Praktikum in einer Schule.",
+        "c) Für eine Ausbildung als Mechanikerin.",
+        "d) Für einen Minijob im Lager."
+      ]
+    },
+    {
+      "id": "de-b1-l-p2-q2",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Wie sollen Bewerbungen eingereicht werden?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Der Text sagt: Bewerbungen werden nur online entgegengenommen.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "work",
+        "technology"
+      ],
+      "vocabularyTags": [
+        "Bewerbung"
+      ],
+      "difficulty": 3,
+      "teil": 2,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Per Post an die Geschäftsstelle",
+        "b) Nur online",
+        "c) Persönlich während der Öffnungszeiten",
+        "d) Über soziale Medien"
+      ]
+    },
+    {
+      "id": "de-b1-l-p2-q3",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Warum möchte Laura sich bewerben?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Laura möchte nach der Elternzeit wieder arbeiten.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "work",
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Bewerbung"
+      ],
+      "difficulty": 5,
+      "teil": 2,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Weil sie nach der Elternzeit wieder arbeiten möchte.",
+        "b) Weil sie umziehen muss.",
+        "c) Weil sie studieren will.",
+        "d) Weil sie im Ausland leben will."
+      ]
+    },
+    {
+      "id": "de-b1-l-p2-q4",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Welche Sprachkenntnisse werden verlangt?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Voraussetzung ist Deutsch B2.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "work",
+        "education"
+      ],
+      "vocabularyTags": [
+        "Bewerbung"
+      ],
+      "difficulty": 4,
+      "teil": 2,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Deutsch A2",
+        "b) Deutsch B2",
+        "c) Nur Englisch",
+        "d) Keine Angabe"
+      ]
+    },
+    {
+      "id": "de-b1-l-p3-q1",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Was empfiehlt die Ärztin ihren Patienten zuerst?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Zuerst werden mehr Bewegung und regelmäßige Mahlzeiten empfohlen.",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "health"
+      ],
+      "vocabularyTags": [
+        "Ernährung"
+      ],
+      "difficulty": 5,
+      "teil": 3,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "passageId": "de-b1-p-health",
+      "options": [
+        "a) Mehr Sport und regelmäßige Mahlzeiten",
+        "b) Sofortige Medikamente ohne Diät",
+        "c) Nur Fasten für zwei Wochen",
+        "d) Keinen Konsum von Wasser"
+      ]
+    },
+    {
+      "id": "de-b1-l-p3-q2",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Wann würde die Ärztin weitere Untersuchungen vorschlagen?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Konjunktiv II: erst wenn sich der Zustand nicht verbessert.",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "health"
+      ],
+      "vocabularyTags": [
+        "Ernährung"
+      ],
+      "difficulty": 6,
+      "teil": 3,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Sofort bei der ersten Untersuchung",
+        "b) Wenn sich der Zustand nicht verbessert",
+        "c) Nur bei Kindern unter zwölf Jahren",
+        "d) Nie"
+      ]
+    },
+    {
+      "id": "de-b1-l-p3-q3",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Was sollten Patienten besonders reduzieren?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Weniger zuckerhaltige Getränke werden empfohlen.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "health",
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Ernährung"
+      ],
+      "difficulty": 4,
+      "teil": 3,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Wasser",
+        "b) Zuckerhaltige Getränke",
+        "c) Gemüse",
+        "d) Vollkornbrot"
+      ]
+    },
+    {
+      "id": "de-b1-l-p3-q4",
+      "module": "lesen",
+      "type": "multiple",
+      "question": "Womit hängen laut Text viele Beschwerden zusammen?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Unregelmäßige Mahlzeiten werden als Ursache genannt.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "health"
+      ],
+      "vocabularyTags": [
+        "Ernährung"
+      ],
+      "difficulty": 5,
+      "teil": 3,
+      "skills": [
+        "reading"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Mit unregelmäßigen Mahlzeiten",
+        "b) Mit zu viel Schlaf",
+        "c) Mit kalten Temperaturen",
+        "d) Mit häufigen Reisen"
+      ]
+    },
+    {
+      "id": "de-b1-h-p1-q1",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Sie hören eine Durchsage am Bahnhof. Warum entfällt der Zug nach Basel?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Die Durchsage nennt ein technisches Problem an der Lokomotive.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "travel"
+      ],
+      "vocabularyTags": [
+        "Verspätung"
+      ],
+      "difficulty": 5,
+      "teil": 1,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "passageId": "de-b1-p-travel",
+      "options": [
+        "a) Wegen eines technischen Problems",
+        "b) Wegen eines Streiks",
+        "c) Wegen schlechten Wetters",
+        "d) Wegen einer Veranstaltung"
+      ],
+      "segmentLabel": "Aufnahme 1"
+    },
+    {
+      "id": "de-b1-h-p1-q2",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Wann fährt der Ersatzzug?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Der nächste Zug fährt um 15:05 Uhr.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "travel"
+      ],
+      "vocabularyTags": [
+        "Verspätung"
+      ],
+      "difficulty": 4,
+      "teil": 1,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Um 14:32 Uhr",
+        "b) Um 15:05 Uhr",
+        "c) Um 16:30 Uhr",
+        "d) Am nächsten Morgen"
+      ],
+      "segmentLabel": "Aufnahme 1"
+    },
+    {
+      "id": "de-b1-h-p1-q3",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Was können Fahrgäste mit gültiger Fahrkarte tun?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Kostenlose Nutzung des nächsten Zuges wird angeboten.",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "travel",
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Verspätung"
+      ],
+      "difficulty": 5,
+      "teil": 1,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Den nächsten Zug kostenlos nutzen",
+        "b) Sofort eine Rückerstattung bar erhalten",
+        "c) Ein Hotelzimmer buchen",
+        "d) Nur mit Bus weiterfahren"
+      ],
+      "segmentLabel": "Aufnahme 1"
+    },
+    {
+      "id": "de-b1-h-p1-q4",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Wohin sollte der ausgefallene Zug fahren?",
+      "correct": "b",
+      "correctAnswer": "b",
+      "explanation": "Der Zug war nach Basel SBB geplant.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "travel"
+      ],
+      "vocabularyTags": [
+        "Verspätung"
+      ],
+      "difficulty": 3,
+      "teil": 1,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Nach Berlin",
+        "b) Nach Basel SBB",
+        "c) Nach Wien",
+        "d) Nach Zürich Flughafen"
+      ],
+      "segmentLabel": "Aufnahme 1"
+    },
+    {
+      "id": "de-b1-h-p2-q1",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Worüber spricht der Podcast?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Das Thema ist berufliche Weiterbildung per Online-Kursen.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "education",
+        "technology"
+      ],
+      "vocabularyTags": [
+        "Weiterbildung"
+      ],
+      "difficulty": 5,
+      "teil": 2,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "passageId": "de-b1-p-edu",
+      "options": [
+        "a) Über Online-Weiterbildung für Berufstätige",
+        "b) Über Schulsportwettkämpfe",
+        "c) Über ein neues Kochbuch",
+        "d) Über Mietpreise in Großstädten"
+      ],
+      "segmentLabel": "Aufnahme 2"
+    },
+    {
+      "id": "de-b1-h-p2-q2",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Was empfiehlt die Expertin?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Feste Lernzeiten werden ausdrücklich empfohlen.",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "education"
+      ],
+      "vocabularyTags": [
+        "Weiterbildung"
+      ],
+      "difficulty": 6,
+      "teil": 2,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Feste Lernzeiten einzuplanen",
+        "b) Nur am Wochenende zu lernen",
+        "c) Alle Kurse gleichzeitig zu belegen",
+        "d) Auf Prüfungen zu verzichten"
+      ],
+      "segmentLabel": "Aufnahme 2"
+    },
+    {
+      "id": "de-b1-h-p2-q3",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Welche Kurse sind besonders gefragt?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Sprachkurse und digitale Kompetenzen stehen oben auf der Liste.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "education",
+        "technology"
+      ],
+      "vocabularyTags": [
+        "Weiterbildung"
+      ],
+      "difficulty": 6,
+      "teil": 2,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Sprachkurse und digitale Kompetenzen",
+        "b) Nur klassische Musik",
+        "c) Gartenbau vor Ort",
+        "d) Schreibkurse für Kinder"
+      ],
+      "segmentLabel": "Aufnahme 2"
+    },
+    {
+      "id": "de-b1-h-p2-q4",
+      "module": "horen",
+      "type": "multiple",
+      "question": "Warum nutzen viele Berufstätige Online-Kurse?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Flexibles Lernen von zu Hause wird genannt.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "work",
+        "education"
+      ],
+      "vocabularyTags": [
+        "Weiterbildung"
+      ],
+      "difficulty": 4,
+      "teil": 2,
+      "skills": [
+        "listening"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Weil sie flexibel von zu Hause lernen können",
+        "b) Weil Präsenzkurse verboten sind",
+        "c) Weil sie kein Internet im Büro haben",
+        "d) Weil die Kurse kostenlos sind"
+      ],
+      "segmentLabel": "Aufnahme 2"
+    },
+    {
+      "id": "de-b1-g-q1",
+      "module": "grammatik",
+      "type": "multiple",
+      "question": "Wählen Sie die richtige Ergänzung: Ich bleibe heute zu Hause, _____ ich krank bin.",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Kausalsatz mit weil.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "health",
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "krank"
+      ],
+      "difficulty": 3,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) weil",
+        "b) obwohl",
+        "c) damit",
+        "d) falls"
+      ]
+    },
+    {
+      "id": "de-b1-g-q2",
+      "module": "grammatik",
+      "type": "multiple",
+      "question": "Welcher Satz ist korrekt?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Korrektes Passiv Präsens: wird + Partizip II.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "work"
+      ],
+      "vocabularyTags": [
+        "Brief"
+      ],
+      "difficulty": 6,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) Der Brief wird morgen verschickt.",
+        "b) Der Brief morgen verschickt wird.",
+        "c) Wird der Brief morgen verschickt worden.",
+        "d) Der Brief ist morgen verschickt."
+      ]
+    },
+    {
+      "id": "de-b1-g-q3",
+      "module": "grammatik",
+      "type": "multiple",
+      "question": "Ergänzen Sie: Wenn ich mehr Zeit hätte, _____ ich öfter ins Museum gehen.",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Konjunktiv II im Hauptsatz: würde + Infinitiv.",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Museum"
+      ],
+      "difficulty": 7,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) würde",
+        "b) werde",
+        "c) wäre",
+        "d) hätte"
+      ]
+    },
+    {
+      "id": "de-b1-g-q4",
+      "module": "grammatik",
+      "type": "multiple",
+      "question": "Welcher Relativsatz passt? Das ist die Kollegin, _____ gestern die Präsentation gehalten hat.",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "Nominativ feminin: die Kollegin → die.",
+      "grammarTags": [
+        "g-de-b1-relativ"
+      ],
+      "topicTags": [
+        "work"
+      ],
+      "vocabularyTags": [
+        "Kollegin"
+      ],
+      "difficulty": 6,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) die",
+        "b) der",
+        "c) das",
+        "d) den"
+      ]
+    },
+    {
+      "id": "de-b1-g-q5",
+      "module": "grammatik",
+      "type": "gap_fill",
+      "question": "Ergänzen Sie: In vielen Firmen _____ (werden) jetzt Meetings online durchgeführt.",
+      "correct": "werden",
+      "correctAnswer": "werden",
+      "explanation": "Passiv Präsens Plural: werden + Partizip II.",
+      "grammarTags": [
+        "g-de-b1-passiv"
+      ],
+      "topicTags": [
+        "technology",
+        "work"
+      ],
+      "vocabularyTags": [
+        "Meeting"
+      ],
+      "difficulty": 5,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "gap_fill"
+    },
+    {
+      "id": "de-b1-g-q6",
+      "module": "grammatik",
+      "type": "multiple",
+      "question": "Welche Konjunktion drückt einen Zweck aus?",
+      "correct": "a",
+      "correctAnswer": "a",
+      "explanation": "damit drückt Zweck/Finalität aus.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "education"
+      ],
+      "vocabularyTags": [
+        "Konjunktion"
+      ],
+      "difficulty": 4,
+      "teil": 1,
+      "skills": [
+        "grammar"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "multiple_choice",
+      "options": [
+        "a) damit",
+        "b) weil",
+        "c) obwohl",
+        "d) seitdem"
+      ]
+    },
+    {
+      "id": "de-b1-w-q1",
+      "module": "schreiben",
+      "type": "multiple",
+      "question": "Schreiben Sie eine formelle E-Mail (ca. 80 Wörter) an Ihren Vermieter: Sie möchten eine Reparatur in der Küche anmelden und fragen nach einem Termin nächste Woche.",
+      "correct": "rubric",
+      "correctAnswer": "rubric",
+      "explanation": "Bewertet nach Formellheit, Klarheit, Länge und passenden Redemitteln (B1).",
+      "grammarTags": [
+        "g-de-b1-konjunktiv"
+      ],
+      "topicTags": [
+        "daily_life"
+      ],
+      "vocabularyTags": [
+        "Vermieter",
+        "Reparatur"
+      ],
+      "difficulty": 6,
+      "teil": 1,
+      "skills": [
+        "writing"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "short_answer"
+    },
+    {
+      "id": "de-b1-w-q2",
+      "module": "schreiben",
+      "type": "multiple",
+      "question": "Schreiben Sie einen Forumsbeitrag (ca. 80 Wörter): Sollten Autos in Innenstädten stärker eingeschränkt werden? Nennen Sie zwei Argumente.",
+      "correct": "rubric",
+      "correctAnswer": "rubric",
+      "explanation": "Bewertet nach Argumentation, Struktur und Wortschatz zum Thema Umwelt.",
+      "grammarTags": [
+        "g-de-b1-nebensatz"
+      ],
+      "topicTags": [
+        "environment",
+        "technology"
+      ],
+      "vocabularyTags": [
+        "Innenstadt",
+        "Verkehr"
+      ],
+      "difficulty": 7,
+      "teil": 2,
+      "skills": [
+        "writing"
+      ],
+      "language": "de",
+      "level": "B1",
+      "examType": "goethe",
+      "questionType": "short_answer"
+    }
+  ],
+  "vocabulary": {
+    "Nachhaltigkeit": {
+      "en": "sustainability",
+      "es": "sostenibilidad",
+      "type": "noun"
+    },
+    "Bewerbung": {
+      "en": "job application",
+      "es": "solicitud de empleo",
+      "type": "noun"
+    },
+    "Verspätung": {
+      "en": "delay",
+      "es": "retraso",
+      "type": "noun"
+    },
+    "Weiterbildung": {
+      "en": "continuing education",
+      "es": "formación continua",
+      "type": "noun"
+    }
+  }
+}

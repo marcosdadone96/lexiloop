@@ -1,0 +1,11 @@
+{
+  "primaryBlue": "#2563EB",
+  "teal": "#06B6D4",
+  "darkNavy": "#0F172A",
+  "lightGray": "#E2E8F0",
+  "font": "Poppins",
+  "fontWeights": ["600", "700"],
+  "slogan": "EVERY MISTAKE BECOMES YOUR NEXT LESSON.",
+  "designSystemVersion": "1.0",
+  "designSystemPath": "/assets/css/lexicoil-design-system.css"
+}

@@ -1,0 +1,122 @@
+{
+  "id": "goethe-b1",
+  "examType": "goethe",
+  "language": "de",
+  "level": "B1",
+  "certificate": "Goethe-Zertifikat B1",
+  "principle": "fixed_structure_dynamic_content",
+  "difficultyDistribution": {
+    "easy": { "min": 1, "max": 3, "share": 0.2 },
+    "medium": { "min": 4, "max": 6, "share": 0.4 },
+    "hard": { "min": 7, "max": 10, "share": 0.4 }
+  },
+  "modules": [
+    {
+      "id": "lesen",
+      "title": "Leseverstehen",
+      "time": "65 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "micro_texts",
+          "label": "Kurze Texte (Anzeigen / E-Mails)",
+          "instruction": "Lesen Sie die kurzen Texte und die Aufgaben 1–6. Welche Antwort (a, b oder c) passt?",
+          "textCount": { "min": 5, "max": 6 },
+          "questionsPerText": 1,
+          "wordsPerText": { "min": 80, "max": 120 },
+          "questionTypes": ["multiple_choice", "multiple"],
+          "questionsTotal": { "min": 5, "max": 6 },
+          "topicFocus": ["daily_life", "work", "travel", "health"],
+          "layout": "items"
+        },
+        {
+          "teil": 2,
+          "slotType": "article",
+          "label": "Artikel — Mittellanger Text",
+          "instruction": "Lesen Sie den Text und die Aufgaben. Sind die Aussagen richtig oder falsch? Beantworten Sie auch die Multiple-Choice-Fragen.",
+          "passageCount": 1,
+          "wordsPerPassage": { "min": 400, "max": 500 },
+          "questionTypes": ["richtig_falsch", "true_false", "multiple_choice", "multiple"],
+          "questionsTotal": { "min": 8, "max": 10 },
+          "topicFocus": ["environment", "education", "technology", "health"],
+          "requiresInference": true,
+          "layout": "passage_questions"
+        }
+      ]
+    },
+    {
+      "id": "horen",
+      "title": "Hörverstehen",
+      "time": "40 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "short_dialogues",
+          "label": "Kurze Dialoge",
+          "instruction": "Hören Sie die kurzen Dialoge und beantworten Sie die Fragen.",
+          "dialogueCount": { "min": 5, "max": 6 },
+          "questionsPerDialogue": 1,
+          "questionTypes": ["multiple_choice", "multiple"],
+          "questionsTotal": { "min": 5, "max": 6 },
+          "topicFocus": ["daily_life", "travel", "work"],
+          "layout": "segments"
+        },
+        {
+          "teil": 2,
+          "slotType": "long_audio",
+          "label": "Längere Aufnahme (Gespräch / Interview)",
+          "instruction": "Hören Sie die Aufnahme und beantworten Sie die Fragen zum Hauptthema und zu Details.",
+          "audioCount": 1,
+          "questionTypes": ["multiple_choice", "multiple", "richtig_falsch", "true_false"],
+          "questionsTotal": { "min": 6, "max": 8 },
+          "topicFocus": ["education", "technology", "environment"],
+          "requiresGistAndDetail": true,
+          "layout": "segments"
+        }
+      ]
+    },
+    {
+      "id": "grammatik",
+      "title": "Grammatik / Wortschatz",
+      "time": null,
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "grammar_block",
+          "label": "Grammatik und Wortschatz",
+          "instruction": "Ergänzen Sie die Sätze oder wählen Sie die richtige Antwort.",
+          "questionTypes": ["multiple_choice", "multiple", "gap_fill"],
+          "questionsTotal": { "min": 20, "max": 25 },
+          "grammarFocus": [
+            "g-de-b1-nebensatz",
+            "g-de-b1-passiv",
+            "g-de-b1-konjunktiv",
+            "g-de-b1-relativ",
+            "g-de-a2-perfekt"
+          ],
+          "layout": "questions"
+        }
+      ]
+    },
+    {
+      "id": "schreiben",
+      "title": "Schreiben",
+      "time": "60 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "writing_task",
+          "label": "Schriftlicher Ausdruck",
+          "instruction": "Schreiben Sie einen Text zu der folgenden Aufgabe.",
+          "taskCount": 1,
+          "wordsTarget": { "min": 80, "max": 100 },
+          "taskTypes": ["formal_email", "informal_message"],
+          "bulletPointsRequired": 3,
+          "questionTypes": ["short_answer"],
+          "questionsTotal": { "min": 1, "max": 1 },
+          "layout": "writing"
+        }
+      ]
+    }
+  ]
+}

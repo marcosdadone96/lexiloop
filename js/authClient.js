@@ -1,8 +1,11 @@
 const Auth = (() => {
-  const TOKEN_KEY = 'll_token';
-  const GUEST_KEY = 'll_guest';
+  const TOKEN_KEY = 'lc_token';
+  const GUEST_KEY = 'lc_guest';
+
   let cloudEnabled = null;
   let localMode = false;
+  let supabaseEnabled = false;
+  let authConfig = null;
 
   function isGuest() {
     return localStorage.getItem(GUEST_KEY) === '1';
@@ -18,7 +21,7 @@ const Auth = (() => {
     setToken('');
     applyUser({
       name: 'Guest',
-      email: 'guest@lexiloop.app',
+      email: 'guest@lexicoil.com',
       avatar: 'G',
       plan: 'free',
       pro: false,
@@ -53,47 +56,102 @@ const Auth = (() => {
     return { res, data };
   }
 
-  async function checkCloudAuth() {
-    if (cloudEnabled !== null) return cloudEnabled;
+  async function loadAuthConfig() {
+    if (authConfig) return authConfig;
     try {
       const { res, data } = await api('auth-config');
-      cloudEnabled = res.ok && Boolean(data.enabled);
+      authConfig = res.ok ? data : { enabled: false };
     } catch {
-      cloudEnabled = false;
+      authConfig = { enabled: false };
     }
+    cloudEnabled = Boolean(authConfig.enabled);
     localMode = !cloudEnabled;
+    supabaseEnabled = Boolean(authConfig.supabase);
+    return authConfig;
+  }
+
+  async function checkCloudAuth() {
+    if (cloudEnabled !== null) return cloudEnabled;
+    await loadAuthConfig();
     return cloudEnabled;
   }
 
   function applyUser(user) {
     if (!user) return;
+    const plan = user.guest ? 'guest' : (user.pro || user.plan === 'pro') ? 'pro' : user.plan || 'free';
     const avatar = (user.name || user.email || '?')[0].toUpperCase();
     saveUser({
       name: user.name || 'User',
       email: user.email,
       avatar,
-      plan: user.pro ? 'pro' : user.plan || 'free',
+      plan: user.guest ? 'free' : plan,
+      memberSince: user.memberSince || null,
     });
-    if (user.pro) localStorage.setItem('ll_pro', 'true');
-    else localStorage.removeItem('ll_pro');
+    if (typeof S !== 'undefined') S.plan = plan;
+    if (typeof applyServerQuota === 'function') {
+      if (user.quota) {
+        applyServerQuota({ used: user.quota.used, max: user.quota.max, plan });
+      } else if (user.guest) {
+        applyServerQuota({ used: getQuotaUsed?.() || 0, max: 2, plan: 'guest' });
+      }
+    }
+  }
+
+  async function exchangeSupabaseSession(accessToken) {
+    const { res, data } = await api('auth-supabase-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: accessToken }),
+    });
+    if (!res.ok) throw new Error(mapAuthError(data.error));
+    clearGuest();
+    setToken(data.token);
+    applyUser(data.user);
+    await pullSync();
+    const { res: meRes, data: meData } = await api('auth-me', { headers: authHeaders() });
+    if (meRes.ok) applyUser(meData.user);
+    return data.user;
+  }
+
+  function localSyncSnapshot() {
+    const read = (key, fallback) => {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    };
+    return {
+      flashcards: Array.isArray(S.flashcards) ? S.flashcards : read('lc_fc', []),
+      history: Array.isArray(S.history) ? S.history : read('lc_hist', []),
+      savedExams: Array.isArray(S.savedExams) ? S.savedExams : read('lc_saved', []),
+    };
   }
 
   async function pullSync() {
     if (localMode || !getToken()) return;
+    const localBefore = localSyncSnapshot();
     const { res, data } = await api('user-sync', { headers: authHeaders() });
     if (!res.ok) return;
-    const d = data.data || {};
-    if (Array.isArray(d.flashcards)) S.flashcards = d.flashcards;
-    if (Array.isArray(d.history)) S.history = d.history;
-    if (Array.isArray(d.savedExams)) S.savedExams = d.savedExams;
-    if (d.quota && d.quota.month) {
-      localStorage.setItem('ll_quota', JSON.stringify(d.quota));
-    }
-    localStorage.setItem('ll_fc', JSON.stringify(S.flashcards));
-    localStorage.setItem('ll_hist', JSON.stringify(S.history));
-    localStorage.setItem('ll_saved', JSON.stringify(S.savedExams));
-    updBadges();
-    updQuotaUI();
+    const server = data.data || {};
+    const merged =
+      typeof mergeSyncPayload === 'function'
+        ? mergeSyncPayload(localBefore, server)
+        : {
+            flashcards: Array.isArray(server.flashcards) ? server.flashcards : localBefore.flashcards,
+            history: Array.isArray(server.history) ? server.history : localBefore.history,
+            savedExams: Array.isArray(server.savedExams) ? server.savedExams : localBefore.savedExams,
+          };
+    S.flashcards = merged.flashcards;
+    S.history = merged.history;
+    S.savedExams = merged.savedExams;
+    localStorage.setItem('lc_fc', JSON.stringify(S.flashcards));
+    localStorage.setItem('lc_hist', JSON.stringify(S.history));
+    localStorage.setItem('lc_saved', JSON.stringify(S.savedExams));
+    if (typeof updBadges === 'function') updBadges();
+    if (typeof updQuotaUI === 'function') updQuotaUI();
+    await pushSync();
   }
 
   async function pushSync() {
@@ -106,56 +164,298 @@ const Auth = (() => {
           flashcards: S.flashcards,
           history: S.history,
           savedExams: S.savedExams,
-          quota: JSON.parse(localStorage.getItem('ll_quota') || 'null') || {
-            month: getMonthKey(),
-            used: getQuotaUsed(),
-          },
         },
       }),
     });
   }
 
+  function isSupabaseEmailConfirmed(user) {
+    if (!user) return false;
+    return Boolean(
+      user.email_confirmed_at ||
+        user.confirmed_at ||
+        user.identities?.some((id) => id.identity_data?.email_verified),
+    );
+  }
+
+  function isOAuthCallbackUrl() {
+    if (typeof window === 'undefined') return false;
+    const q = new URLSearchParams(window.location.search);
+    return q.has('code') || /access_token|refresh_token/.test(window.location.hash || '');
+  }
+
+  async function ensureSupabaseReady() {
+    if (!supabaseEnabled || !authConfig) return false;
+    await SupabaseAuth.init(authConfig);
+    return SupabaseAuth.isReady();
+  }
+
+  async function waitForSupabaseSession(sb, maxMs = 10000) {
+    const deadline = Date.now() + maxMs;
+    while (Date.now() < deadline) {
+      const { data, error } = await sb.auth.getSession();
+      if (error) throw error;
+      if (data?.session?.access_token) return data.session;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return null;
+  }
+
+  function stripOAuthParamsFromUrl() {
+    if (typeof window === 'undefined') return;
+    try {
+      const u = new URL(window.location.href);
+      let dirty = false;
+      for (const key of ['code', 'error', 'error_description', 'state']) {
+        if (u.searchParams.has(key)) {
+          u.searchParams.delete(key);
+          dirty = true;
+        }
+      }
+      if (/access_token|refresh_token/i.test(u.hash || '')) {
+        u.hash = '';
+        dirty = true;
+      }
+      if (dirty) {
+        const next = u.pathname + u.search + u.hash;
+        window.history.replaceState({}, document.title, next || '/');
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function completeOAuthCallback() {
+    if (!isOAuthCallbackUrl()) return false;
+    await loadAuthConfig();
+    if (!supabaseEnabled) {
+      stripOAuthParamsFromUrl();
+      throw new Error('Google sign-in is not configured on the server.');
+    }
+    if (!(await ensureSupabaseReady())) {
+      stripOAuthParamsFromUrl();
+      throw new Error('Could not connect to Supabase. Refresh and try again.');
+    }
+
+    const sb = SupabaseAuth.getClient();
+    const params = new URLSearchParams(window.location.search);
+    const oauthErr = params.get('error_description') || params.get('error');
+    if (oauthErr) {
+      stripOAuthParamsFromUrl();
+      throw new Error(decodeURIComponent(String(oauthErr).replace(/\+/g, ' ')));
+    }
+
+    const code = params.get('code');
+    let session = await waitForSupabaseSession(sb, 3000);
+
+    if (!session?.access_token && code) {
+      const { data, error } = await sb.auth.exchangeCodeForSession(code);
+      if (error) throw new Error(mapSupabaseError(error));
+      if (data?.session) session = data.session;
+    }
+    if (!session?.access_token) {
+      session = await waitForSupabaseSession(sb, 10000);
+    }
+    if (!session?.access_token) {
+      stripOAuthParamsFromUrl();
+      throw new Error('Session expired or invalid link. Try signing in again.');
+    }
+
+    try {
+      await exchangeSupabaseSession(session.access_token);
+      return true;
+    } finally {
+      stripOAuthParamsFromUrl();
+    }
+  }
+
   async function register(name, email, password) {
-    await checkCloudAuth();
+    await loadAuthConfig();
+    const em = String(email || '').trim().toLowerCase();
+
+    if (supabaseEnabled) {
+      if (!(await ensureSupabaseReady())) {
+        throw new Error('Supabase auth is unavailable. Refresh the page and try again.');
+      }
+      const sb = SupabaseAuth.getClient();
+      const { data, error } = await sb.auth.signUp({
+        email: em,
+        password,
+        options: {
+          data: { full_name: String(name || '').trim() },
+          emailRedirectTo: SupabaseAuth.getEmailRedirectUrl(),
+        },
+      });
+      if (error) throw new Error(mapSupabaseError(error));
+      if (data.session?.access_token) {
+        return exchangeSupabaseSession(data.session.access_token);
+      }
+      try {
+        await sb.auth.signOut();
+      } catch {
+        /* ignore */
+      }
+      return { pendingConfirmation: true, email: em };
+    }
+
     if (localMode) return localRegister(name, email, password);
 
     const { res, data } = await api('auth-register', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email: em, password }),
     });
     if (!res.ok) throw new Error(mapAuthError(data.error));
     clearGuest();
     setToken(data.token);
     applyUser(data.user);
     await pullSync();
+    const { res: meRes, data: meData } = await api('auth-me', { headers: authHeaders() });
+    if (meRes.ok) applyUser(meData.user);
     return data.user;
   }
 
   async function login(email, password) {
-    await checkCloudAuth();
+    await loadAuthConfig();
+    const em = String(email || '').trim().toLowerCase();
+
+    if (supabaseEnabled) {
+      if (!(await ensureSupabaseReady())) {
+        throw new Error('Supabase auth is unavailable. Refresh the page and try again.');
+      }
+      const sb = SupabaseAuth.getClient();
+      const { data, error } = await sb.auth.signInWithPassword({ email: em, password });
+      if (error) throw new Error(mapSupabaseError(error));
+      if (!data.session) throw new Error('Authentication failed.');
+      return exchangeSupabaseSession(data.session.access_token);
+    }
+
     if (localMode) return localLogin(email, password);
 
     const { res, data } = await api('auth-login', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: em, password }),
     });
     if (!res.ok) throw new Error(mapAuthError(data.error));
     clearGuest();
     setToken(data.token);
     applyUser(data.user);
     await pullSync();
+    const { res: meRes, data: meData } = await api('auth-me', { headers: authHeaders() });
+    if (meRes.ok) applyUser(meData.user);
     return data.user;
   }
 
+  async function signInWithGoogle() {
+    await loadAuthConfig();
+    if (!supabaseEnabled) {
+      throw new Error('Google sign-in is not configured on the server.');
+    }
+    if (!(await ensureSupabaseReady())) {
+      throw new Error('Could not connect to Supabase. Check your connection and try again.');
+    }
+    const { error } = await SupabaseAuth.getClient().auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: SupabaseAuth.getOAuthRedirectUrl(),
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+    if (error) throw error;
+  }
+
+  async function resendConfirmationEmail(email) {
+    await loadAuthConfig();
+    const em = String(email || '').trim().toLowerCase();
+    if (!em) throw new Error('Enter your email address.');
+    if (!supabaseEnabled) {
+      throw new Error('Email confirmation is not configured on the server.');
+    }
+    if (!(await ensureSupabaseReady())) {
+      throw new Error('Supabase auth is unavailable. Refresh the page and try again.');
+    }
+    const { error } = await SupabaseAuth.getClient().auth.resend({
+      type: 'signup',
+      email: em,
+      options: { emailRedirectTo: SupabaseAuth.getEmailRedirectUrl() },
+    });
+    if (error) throw new Error(mapSupabaseError(error));
+    return { ok: true };
+  }
+
+  async function forgotPassword(email) {
+    await loadAuthConfig();
+    const em = String(email || '').trim().toLowerCase();
+    if (!em) throw new Error('Enter your email address.');
+
+    if (supabaseEnabled && SupabaseAuth.isReady()) {
+      const sb = SupabaseAuth.getClient();
+      const { error } = await sb.auth.resetPasswordForEmail(em, {
+        redirectTo: `${SupabaseAuth.getEmailRedirectUrl()}?type=recovery`,
+      });
+      if (error) throw new Error(mapSupabaseError(error));
+      return { ok: true };
+    }
+
+    const { res, data } = await api('auth-forgot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: em }),
+    });
+    if (!res.ok) throw new Error(mapAuthError(data.error) || 'Could not send reset link.');
+    return data;
+  }
+
+  function restoreCachedUser() {
+    try {
+      const raw = localStorage.getItem('lc_user');
+      if (!raw) return false;
+      const cached = JSON.parse(raw);
+      if (!cached?.email) return false;
+      applyUser(cached);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async function bootstrap() {
-    await checkCloudAuth();
+    await loadAuthConfig();
+
+    const token = getToken();
+    if (token) {
+      clearGuest();
+      const { res, data } = await api('auth-me', { headers: authHeaders() });
+      if (res.ok) {
+        applyUser(data.user);
+        await pullSync();
+        return true;
+      }
+      if (res.status === 401) {
+        setToken('');
+        localStorage.removeItem('lc_user');
+      } else if (restoreCachedUser()) {
+        return true;
+      }
+    }
+
+    if (supabaseEnabled && (await ensureSupabaseReady())) {
+      const { data } = await SupabaseAuth.getClient().auth.getSession();
+      if (data?.session?.access_token) {
+        try {
+          await exchangeSupabaseSession(data.session.access_token);
+          return true;
+        } catch {
+          if (getToken() && restoreCachedUser()) return true;
+        }
+      }
+    }
 
     if (isGuest()) {
       applyUser({
         name: 'Guest',
-        email: 'guest@lexiloop.app',
+        email: 'guest@lexicoil.com',
         avatar: 'G',
         plan: 'free',
         pro: false,
@@ -164,33 +464,26 @@ const Auth = (() => {
       return true;
     }
 
-    if (localMode) {
-      if (S.user) return true;
-      return false;
-    }
+    if (localMode && S.user) return true;
 
-    const token = getToken();
-    if (!token) {
-      S.user = null;
-      localStorage.removeItem('ll_user');
-      return false;
-    }
-
-    const { res, data } = await api('auth-me', { headers: authHeaders() });
-    if (!res.ok) {
-      setToken('');
-      return false;
-    }
-    applyUser(data.user);
-    await pullSync();
-    return true;
+    S.user = null;
+    localStorage.removeItem('lc_user');
+    return false;
   }
 
-  function logout() {
+  async function logout() {
+    if (supabaseEnabled && SupabaseAuth.isReady()) {
+      try {
+        await SupabaseAuth.getClient().auth.signOut();
+      } catch {
+        /* ignore */
+      }
+    }
     setToken('');
     clearGuest();
     S.user = null;
-    localStorage.removeItem('ll_user');
+    S.plan = 'guest';
+    localStorage.removeItem('lc_user');
   }
 
   function mapAuthError(code) {
@@ -199,8 +492,22 @@ const Auth = (() => {
       bad_credentials: 'Invalid email or password.',
       invalid_fields: 'Fill all fields correctly.',
       auth_not_configured: 'Accounts are not configured on the server yet.',
+      supabase_not_configured: 'Supabase is not configured on the server yet.',
+      invalid_supabase_session: 'Session expired. Please sign in again.',
     };
     return map[code] || 'Authentication failed.';
+  }
+
+  function mapSupabaseError(err) {
+    const msg = String(err?.message || '');
+    if (/already registered|already exists|user already registered/i.test(msg)) {
+      return 'Email already registered.';
+    }
+    if (/invalid login credentials/i.test(msg)) return 'Invalid email or password.';
+    if (/email not confirmed/i.test(msg)) {
+      return 'Please confirm your email before signing in.';
+    }
+    return msg || 'Authentication failed.';
   }
 
   function localRegister(name, email, password) {
@@ -208,7 +515,7 @@ const Auth = (() => {
     const em = email.trim().toLowerCase();
     if (u[em]) throw new Error('Email already registered.');
     u[em] = { nm: name, pw: password, plan: 'free' };
-    localStorage.setItem('ll_users', JSON.stringify(u));
+    localStorage.setItem('lc_users', JSON.stringify(u));
     applyUser({ name, email: em, plan: 'free', pro: false });
   }
 
@@ -228,12 +535,18 @@ const Auth = (() => {
     checkCloudAuth,
     register,
     login,
+    signInWithGoogle,
+    completeOAuthCallback,
+    resendConfirmationEmail,
+    forgotPassword,
     bootstrap,
     logout,
     pushSync,
     continueAsGuest,
     clearGuest,
     isGuest,
+    hasToken: () => Boolean(getToken()),
     isLocalMode: () => localMode,
+    usesSupabase: () => supabaseEnabled,
   };
 })();

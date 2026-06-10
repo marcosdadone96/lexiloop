@@ -1,0 +1,15 @@
+Design the final architecture.
+
+Do not implement yet.
+
+Produce:
+
+TARGET_ARCHITECTURE.md
+
+Include:
+
+- folder structure
+- dependency flow
+- modules
+- interfaces
+- boundaries

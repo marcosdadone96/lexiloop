@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LexiCoil Question Library",
+  "type": "object",
+  "required": ["meta", "questions"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["language", "level", "version"],
+      "properties": {
+        "language": { "type": "string", "enum": ["de", "en", "es"] },
+        "level": { "type": "string", "pattern": "^[ABC][12]$" },
+        "version": { "type": "integer", "minimum": 1 },
+        "generatedAt": { "type": "string" },
+        "examId": { "type": "string" },
+        "examType": { "type": "string" },
+        "mode": { "type": "string" },
+        "sourceBank": { "type": "string" }
+      }
+    },
+    "passages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "module", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "module": { "type": "string", "enum": ["lesen", "horen", "reading", "listening"] },
+          "title": { "type": "string" },
+          "text": { "type": "string" }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "module", "question", "correctAnswer"],
+        "properties": {
+          "id": { "type": "string" },
+          "module": {
+            "type": "string",
+            "enum": ["lesen", "horen", "schreiben", "sprechen", "grammatik", "reading", "listening", "writing"]
+          },
+          "teil": { "type": "integer", "minimum": 1 },
+          "part": { "type": "integer", "minimum": 1 },
+          "passageId": { "type": "string" },
+          "segmentLabel": { "type": "string" },
+          "transcript": { "type": "string" },
+          "type": { "type": "string" },
+          "questionType": { "type": "string" },
+          "question": { "type": "string" },
+          "options": { "type": "array", "items": { "type": "string" } },
+          "correct": {},
+          "correctAnswer": {},
+          "explanation": { "type": "string" },
+          "grammarTags": { "type": "array", "items": { "type": "string" } },
+          "topicTags": { "type": "array", "items": { "type": "string" } },
+          "vocabularyTags": { "type": "array", "items": { "type": "string" } },
+          "difficulty": { "type": "integer", "minimum": 1, "maximum": 10 },
+          "skills": { "type": "array", "items": { "type": "string" } },
+          "language": { "type": "string" },
+          "level": { "type": "string" },
+          "examType": { "type": "string" }
+        }
+      }
+    },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "en": { "type": "string" },
+          "es": { "type": "string" },
+          "de": { "type": "string" },
+          "type": { "type": "string" }
+        }
+      }
+    }
+  }
+}

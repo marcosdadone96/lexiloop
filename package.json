@@ -1,15 +1,43 @@
 {
-  "name": "lexiloop",
+  "name": "lexicoil",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
-  "description": "LexiLoop - AI-powered official English and German exam preparation",
+  "description": "LexiCoil - AI-powered official English and German exam preparation",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "netlify dev"
+    "dev": "netlify dev",
+    "build:landing": "cd landing && npm install && npm run build",
+    "build:site": "npm run build:landing && node scripts/assemble-dist.mjs",
+    "dev:landing": "cd landing && npm run dev",
+    "validate:knowledge": "node scripts/validate-knowledge.mjs",
+    "validate:demo": "node scripts/validate-demo-content.mjs",
+    "validate:library": "node scripts/validate-library.mjs",
+    "test:library": "node scripts/test-library-builder.mjs",
+    "test:metadata": "node scripts/test-metadata-schema.mjs",
+    "seed:library": "node scripts/seed-library.mjs",
+    "import:exam-banks": "node scripts/import-exam-bank.mjs",
+    "validate:blueprint": "node scripts/validate-blueprint.mjs",
+    "test:blueprint": "node scripts/test-blueprint.mjs",
+    "test:exam-validator": "node scripts/test-exam-validator.mjs",
+    "test:exam-quality-gate": "node scripts/test-exam-quality-gate.mjs",
+    "test:spanish-exam": "node scripts/test-spanish-exam.mjs",
+    "test:domain": "node scripts/test-domain.mjs",
+    "test:knowledge-engine": "node scripts/test-knowledge-engine.mjs",
+    "test:prompt-builder": "node scripts/test-prompt-builder.mjs",
+    "test:generators": "node scripts/test-generators.mjs",
+    "test:providers": "node scripts/test-provider-adapters.mjs",
+    "test:exam-engine-e2e": "node scripts/test-exam-engine-e2e.mjs --dry",
+    "test:exam-engine-e2e:live": "node scripts/test-exam-engine-e2e.mjs --live",
+    "test:exam-engine-e2e:live:smoke": "node scripts/test-exam-engine-e2e.mjs --live --max-chunks=2",
+    "test:acceptance": "node scripts/test-acceptance.mjs",
+    "test:engine": "node scripts/test-domain.mjs && node scripts/test-knowledge-engine.mjs && node scripts/test-prompt-builder.mjs && node scripts/test-generators.mjs && node scripts/test-provider-adapters.mjs && node scripts/test-exam-validator.mjs && node scripts/test-exam-quality-gate.mjs && node scripts/test-spanish-exam.mjs && node scripts/test-exam-engine-e2e.mjs --dry"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.4",
+    "@supabase/supabase-js": "^2.49.8",
     "bcryptjs": "^2.4.3"
   }
 }

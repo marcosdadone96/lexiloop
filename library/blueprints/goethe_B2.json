@@ -1,0 +1,123 @@
+{
+  "id": "goethe-b2",
+  "examType": "goethe",
+  "language": "de",
+  "level": "B2",
+  "certificate": "Goethe-Zertifikat B2",
+  "principle": "fixed_structure_dynamic_content",
+  "difficultyDistribution": {
+    "easy": { "min": 1, "max": 3, "share": 0.2 },
+    "medium": { "min": 4, "max": 6, "share": 0.4 },
+    "hard": { "min": 7, "max": 10, "share": 0.4 }
+  },
+  "modules": [
+    {
+      "id": "lesen",
+      "title": "Leseverstehen",
+      "time": "65 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "short_texts",
+          "label": "Kurze Texte — Überschriften / Zweck",
+          "instruction": "Lesen Sie die Texte und ordnen Sie die passende Überschrift oder den Zweck zu.",
+          "textCount": { "min": 4, "max": 5 },
+          "wordsPerText": { "min": 100, "max": 150 },
+          "questionTypes": ["multiple_choice", "multiple", "matching", "match"],
+          "questionsTotal": { "min": 4, "max": 5 },
+          "topicFocus": ["work", "technology", "culture", "daily_life"],
+          "layout": "items"
+        },
+        {
+          "teil": 2,
+          "slotType": "long_article",
+          "label": "Langer Artikel",
+          "instruction": "Lesen Sie den Artikel und beantworten Sie die Fragen zu Details, Inference und Haltung des Autors.",
+          "passageCount": 1,
+          "wordsPerPassage": { "min": 600, "max": 700 },
+          "questionTypes": ["multiple_choice", "multiple", "richtig_falsch", "true_false"],
+          "questionsTotal": { "min": 10, "max": 12 },
+          "topicFocus": ["environment", "digitalisation", "science", "migration"],
+          "requiresInference": true,
+          "requiresAttitude": true,
+          "layout": "passage_questions"
+        }
+      ]
+    },
+    {
+      "id": "horen",
+      "title": "Hörverstehen",
+      "time": "40 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "long_audio",
+          "label": "Interview / Diskussion 1",
+          "instruction": "Hören Sie das Interview und beantworten Sie die Fragen.",
+          "audioCount": 1,
+          "questionTypes": ["multiple_choice", "multiple"],
+          "questionsTotal": { "min": 5, "max": 8 },
+          "topicFocus": ["work", "education", "technology"],
+          "requiresInference": true,
+          "layout": "segments"
+        },
+        {
+          "teil": 2,
+          "slotType": "long_audio",
+          "label": "Interview / Diskussion 2",
+          "instruction": "Hören Sie die Diskussion und beantworten Sie die Fragen.",
+          "audioCount": 1,
+          "questionTypes": ["multiple_choice", "multiple", "richtig_falsch", "true_false"],
+          "questionsTotal": { "min": 5, "max": 7 },
+          "topicFocus": ["environment", "culture", "migration"],
+          "requiresInference": true,
+          "layout": "segments"
+        }
+      ]
+    },
+    {
+      "id": "grammatik",
+      "title": "Sprachbausteine / Grammatik",
+      "time": null,
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "language_in_use",
+          "label": "Grammatik und Ausdruck",
+          "instruction": "Ergänzen Sie die Lücken oder formen Sie die Sätze um.",
+          "questionTypes": ["gap_fill", "multiple_choice", "multiple"],
+          "questionsTotal": { "min": 25, "max": 30 },
+          "grammarFocus": [
+            "g-de-b2-konj1",
+            "g-de-b2-nominal",
+            "g-de-b1-passiv",
+            "g-de-b1-konjunktiv",
+            "g-de-b1-relativ"
+          ],
+          "connectorFocus": ["trotzdem", "dennoch", "daher", "obwohl"],
+          "layout": "questions"
+        }
+      ]
+    },
+    {
+      "id": "schreiben",
+      "title": "Schreiben",
+      "time": "75 Minuten",
+      "parts": [
+        {
+          "teil": 1,
+          "slotType": "formal_writing",
+          "label": "Formeller Schreibauftrag",
+          "instruction": "Verfassen Sie einen strukturierten Text zu der folgenden Aufgabe.",
+          "taskCount": 1,
+          "wordsTarget": { "min": 150, "max": 180 },
+          "taskTypes": ["essay", "complaint", "opinion", "formal_letter"],
+          "structuredParagraphs": true,
+          "questionTypes": ["short_answer"],
+          "questionsTotal": { "min": 1, "max": 1 },
+          "layout": "writing"
+        }
+      ]
+    }
+  ]
+}

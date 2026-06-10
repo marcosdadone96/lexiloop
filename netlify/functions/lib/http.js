@@ -1,8 +1,8 @@
 'use strict';
 
 const DEFAULT_ORIGINS = [
-  'https://lexiloop.netlify.app',
-  'https://lexiloop-exams.netlify.app',
+  'https://www.lexicoil.com',
+  'https://lexicoil.com',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:8888',
@@ -10,7 +10,7 @@ const DEFAULT_ORIGINS = [
 ];
 
 function allowedOrigins() {
-  const extra = (process.env.LEXILOOP_ALLOWED_ORIGINS || '')
+  const extra = (process.env.LEXICOIL_ALLOWED_ORIGINS || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
@@ -20,7 +20,8 @@ function allowedOrigins() {
 function corsHeaders(event, methods = 'POST, OPTIONS') {
   const origin = (event.headers && (event.headers.origin || event.headers.Origin)) || '';
   const allowed = allowedOrigins();
-  const isPreview = origin.includes('.netlify.app');
+  const isPreview =
+    process.env.ALLOW_NETLIFY_PREVIEWS === 'true' && origin.includes('.netlify.app');
   const match =
     allowed.includes(origin) || isPreview
       ? origin

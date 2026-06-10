@@ -1,0 +1,14 @@
+Implement Provider Adapters.
+
+Goethe
+Cambridge
+DELE
+
+Providers must only describe:
+
+- exam structure
+- timing
+- scoring
+- task types
+
+Providers must never contain prompts.

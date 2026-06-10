@@ -7,6 +7,7 @@ const {
   normalizeEmail,
   userKey,
   signAuthToken,
+  getTokenVersion,
 } = require('./lib/authLib.js');
 const { corsHeaders, parseJsonBody, jsonResponse } = require('./lib/http.js');
 
@@ -53,7 +54,7 @@ exports.handler = async (event) => {
   };
   await store.setJSON(key, user);
 
-  const session = signAuthToken(email, name);
+  const session = signAuthToken(email, name, getTokenVersion(user));
   return jsonResponse(200, cors, {
     token: session.token,
     expiresAt: session.expiresAt,

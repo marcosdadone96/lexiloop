@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LexiCoil — Product demo (offline)</title>
+<meta name="description" content="Try a real reading passage, save vocabulary, and see how LexiCoil turns your words into practice. No account required.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/app-screens.css">
+<link rel="stylesheet" href="/assets/css/demo-loop.css">
+</head>
+<body>
+<header class="appbar">
+  <a class="brand" href="/"><span class="logo" aria-hidden="true"></span>LexiCoil</a>
+  <span class="spacer"></span>
+  <span class="badge-soft" id="badgeLabel">Demo · offline · no account</span>
+</header>
+<main class="container demo-narrow" id="root">
+  <p class="lede" style="margin-top:8px">Loading…</p>
+</main>
+<script>
+(function(){
+  'use strict';
+
+  var VOCAB_KEY = 'lexicoil_demo_vocab';
+  var OPEN_LEVELS = ['B1', 'B2', 'C1'];
+  var LANGS = {
+    de: { name: 'Goethe', flag: '🇩🇪', board: 'Goethe-Institut' },
+    en: { name: 'Cambridge', flag: '🇬🇧', board: 'Cambridge English' },
+    es: { name: 'DELE', flag: '🇪🇸', board: 'Instituto Cervantes' }
+  };
+  var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  var TR_LANG = 'en';
+
+  var MASTERY = {
+    de: [
+      { label: 'Passiv', pct: 68, tone: 'good' },
+      { label: 'Konjunktiv II', pct: 52, tone: 'mid' },
+      { label: 'Relativsätze', pct: 43, tone: 'weak' }
+    ],
+    en: [
+      { label: 'Passive', pct: 68, tone: 'good' },
+      { label: 'Conditionals', pct: 52, tone: 'mid' },
+      { label: 'Reported speech', pct: 43, tone: 'weak' }
+    ],
+    es: [
+      { label: 'Voz pasiva', pct: 68, tone: 'good' },
+      { label: 'Condicional', pct: 52, tone: 'mid' },
+      { label: 'Subjuntivo', pct: 43, tone: 'weak' }
+    ]
+  };
+
+  var state = {
+    view: 'pick',
+    lang: 'de',
+    level: 'B1',
+    exam: null,
+    answers: {},
+    checked: false,
+    popWord: null,
+    popTrLang: TR_LANG,
+    fcFlipped: false
+  };
+
+  var root = document.getElementById('root');
+  var badge = document.getElementById('badgeLabel');
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function isOpenLevel(lv){ return OPEN_LEVELS.indexOf(lv) >= 0; }
+
+  function loadBaseExam(lang, level){
+    return fetch('/data/demo/' + lang + '_' + level + '.json').then(function(res){
+      if (!res.ok) throw new Error('Demo not found');
+      return res.json();
+    });
+  }
+
+  function loadVocab(){
+    try {
+      var raw = localStorage.getItem(VOCAB_KEY);
+      var list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (_) { return []; }
+  }
+
+  function isWordSaved(word, lang){
+    var k = lang + '|' + word.toLowerCase();
+    return loadVocab().some(function(v){ return v.lang + '|' + v.word.toLowerCase() === k; });
+  }
+
+  function saveWord(entry){
+    var list = loadVocab();
+    var k = entry.lang + '|' + entry.word.toLowerCase();
+    if (list.some(function(v){ return v.lang + '|' + v.word.toLowerCase() === k; })) return false;
+    list.unshift(entry);
+    try { localStorage.setItem(VOCAB_KEY, JSON.stringify(list)); } catch (_) {}
+    return true;
+  }
+
+  function artFor(lang, gender){
+    var g = String(gender || '').toLowerCase();
+    if (lang === 'de') {
+      if (g === 'm' || g === 'masc' || g === 'masculine' || g === 'der') return 'der';
+      if (g === 'f' || g === 'fem' || g === 'feminine' || g === 'die') return 'die';
+      if (g === 'n' || g === 'neut' || g === 'neuter' || g === 'das') return 'das';
+    }
+    if (lang === 'es') {
+      if (g === 'm' || g === 'masc' || g === 'masculine' || g === 'el') return 'el';
+      if (g === 'f' || g === 'fem' || g === 'feminine' || g === 'la') return 'la';
+    }
+    return '';
+  }
+
+  function artClass(art){
+    if (art === 'der' || art === 'el') return 'demo-art--masc';
+    if (art === 'die' || art === 'la') return 'demo-art--fem';
+    if (art === 'das') return 'demo-art--neut';
+    return '';
+  }
+
+  function speakWord(word, lang){
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    var loc = lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : 'en-GB';
+    var u = new SpeechSynthesisUtterance(word);
+    u.lang = loc;
+    u.rate = 0.88;
+    window.speechSynthesis.speak(u);
+  }
+
+  function readingPart(exam){
+    var mod = exam.modules && exam.modules[0];
+    return mod && mod.parts && mod.parts[0] ? mod.parts[0] : null;
+  }
+
+  function itemFormat(item, part){
+    if (item.format === 'true_false' || item.format === 'multiple_choice') return item.format;
+    if (part.format === 'true_false' || part.format === 'multiple_choice') return part.format;
+    if (part.type === 'true_false') return 'true_false';
+    return 'multiple_choice';
+  }
+
+  function parseQuery(){
+    var p = new URLSearchParams(location.search);
+    if (LANGS[p.get('lang')]) state.lang = p.get('lang');
+    var lv = (p.get('level') || '').toUpperCase();
+    if (LEVELS.indexOf(lv) >= 0) {
+      state.level = isOpenLevel(lv) ? lv : 'B1';
+    }
+  }
+
+  function setUrl(){
+    var q = state.view === 'demo' ? ('?lang=' + state.lang + '&level=' + state.level) : '';
+    try { history.replaceState(null, '', location.pathname + q); } catch (_) {}
+  }
+
+  function sampleWord(exam){
+    var vocab = loadVocab().filter(function(v){ return v.lang === exam.lang; });
+    if (vocab.length) return vocab[0];
+    var part = readingPart(exam);
+    if (part && part.markableWords && part.markableWords[0]) {
+      var w = part.markableWords[0];
+      return { word: w.word, lang: exam.lang, gender: w.gender, translations: w.translations };
+    }
+    return { word: 'word', lang: exam.lang, translations: { en: 'translation' } };
+  }
+
+  function wordTr(entry, lang){
+    if (!entry || !entry.translations) return '—';
+    return entry.translations[lang] || entry.translations.en || Object.values(entry.translations)[0] || '—';
+  }
+
+  function passageHtml(text, markable, lang){
+    if (!text) return '';
+    var saved = loadVocab();
+    var marks = (markable || []).slice().sort(function(a, b){
+      return text.indexOf(b.word) - text.indexOf(a.word);
+    });
+    var chunks = [];
+    var pos = 0;
+    marks.forEach(function(m){
+      var i = text.indexOf(m.word, pos);
+      if (i < 0) return;
+      if (i > pos) chunks.push({ t: 'text', v: text.slice(pos, i) });
+      var isSaved = saved.some(function(v){ return v.lang === lang && v.word.toLowerCase() === m.word.toLowerCase(); });
+      chunks.push({ t: 'word', v: m.word, meta: m, saved: isSaved });
+      pos = i + m.word.length;
+    });
+    if (pos < text.length) chunks.push({ t: 'text', v: text.slice(pos) });
+    return chunks.map(function(c){
+      if (c.t === 'text') return esc(c.v);
+      var cls = 'w' + (c.saved ? ' saved' : '') + (state.popWord === c.v ? ' active' : '');
+      return '<span class="' + cls + '" data-word="' + esc(c.v) + '" role="button" tabindex="0">' + esc(c.v) + '</span>';
+    }).join('');
+  }
+
+  function renderPick(){
+    state.view = 'pick';
+    badge.textContent = 'Demo · offline · no account';
+    setUrl();
+    var langChips = Object.keys(LANGS).map(function(code){
+      return '<button type="button" class="chip' + (state.lang === code ? ' on' : '') + '" data-lang="' + code + '">' +
+        LANGS[code].flag + ' ' + esc(LANGS[code].name) + '</button>';
+    }).join('');
+    var lvlBtns = LEVELS.map(function(lv){
+      var open = isOpenLevel(lv);
+      var cls = 'chip' + (state.level === lv ? ' on' : '') + (open ? '' : ' chip--locked');
+      var soon = open ? '' : ' <span class="chip-soon">Soon</span>';
+      return '<button type="button" class="' + cls + '" data-level="' + lv + '"' + (open ? '' : ' disabled') + '>' + lv + soon + '</button>';
+    }).join('');
+    var canStart = isOpenLevel(state.level);
+    root.innerHTML =
+      '<div class="demo-intro">' +
+        '<h1 class="h1">Try LexiCoil — for real</h1>' +
+        '<p class="lede">Read a full passage, answer comprehension questions, save vocabulary, and see how practice is built from your words. 100% offline preview.</p>' +
+      '</div>' +
+      '<div class="card">' +
+        '<p class="seclbl">Certification</p>' +
+        '<div class="chips">' + langChips + '</div>' +
+        '<p class="seclbl" style="margin-top:14px">Level</p>' +
+        '<div class="level-grid">' + lvlBtns + '</div>' +
+        '<button type="button" class="btn btn-primary btn-block" id="btnStart"' + (canStart ? '' : ' disabled') + '>Start demo →</button>' +
+        (canStart ? '' : '<p class="note" style="margin-top:10px">B1, B2 and C1 are available in this preview. Other levels coming soon.</p>') +
+      '</div>' +
+      '<p class="note">Preview only — content is pre-generated. The full app builds practice from <em>your</em> mistakes with AI.</p>';
+    root.querySelectorAll('[data-lang]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.lang = btn.dataset.lang; renderPick(); });
+    });
+    root.querySelectorAll('[data-level]').forEach(function(btn){
+      if (btn.disabled) return;
+      btn.addEventListener('click', function(){ state.level = btn.dataset.level; renderPick(); });
+    });
+    var startBtn = document.getElementById('btnStart');
+    if (startBtn) startBtn.addEventListener('click', startDemo);
+  }
+
+  function startDemo(){
+    if (!isOpenLevel(state.level)) return;
+    root.innerHTML = '<p class="lede">Loading sample…</p>';
+    loadBaseExam(state.lang, state.level).then(function(exam){
+      state.exam = exam;
+      state.view = 'demo';
+      state.answers = {};
+      state.checked = false;
+      state.popWord = null;
+      state.popTrLang = TR_LANG;
+      state.fcFlipped = false;
+      badge.textContent = 'Demo · ' + LANGS[exam.lang].name + ' ' + exam.level;
+      setUrl();
+      renderDemo();
+    }).catch(function(){
+      root.innerHTML = '<p class="err">Could not load demo. <button type="button" class="btn btn-secondary" id="btnRetry">Try again</button></p>';
+      document.getElementById('btnRetry').addEventListener('click', renderPick);
+    });
+  }
+
+  function getMarkable(word){
+    var part = readingPart(state.exam);
+    if (!part || !part.markableWords) return null;
+    return part.markableWords.find(function(m){ return m.word === word; }) || null;
+  }
+
+  function renderQuestions(part){
+    var lang = state.exam.lang;
+    return part.items.map(function(item, idx){
+      var fmt = itemFormat(item, part);
+      var picked = state.answers[item.id];
+      var correctOpt = item.options.find(function(o){ return o.correct; });
+      var opts = item.options.map(function(o){
+        var cls = 'demo-opt';
+        var name = 'q_' + item.id;
+        var checked = picked === o.key ? ' checked' : '';
+        if (state.checked) {
+          if (o.correct) cls += ' demo-opt--correct';
+          else if (picked === o.key) cls += ' demo-opt--wrong';
+        }
+        var label = o.text;
+        if (fmt === 'true_false' && state.checked && o.correct && picked && picked !== o.key) {
+          label += ' ✓';
+        }
+        return '<label class="' + cls + '">' +
+          '<input type="radio" name="' + esc(name) + '" value="' + esc(o.key) + '"' + checked +
+          (state.checked ? ' disabled' : '') + ' data-item="' + esc(item.id) + '" data-key="' + esc(o.key) + '">' +
+          '<span>' + (fmt === 'multiple_choice' ? esc(o.key) + ') ' : '') + esc(label) + '</span></label>';
+      }).join('');
+      return '<div class="demo-q" id="demoQ_' + esc(item.id) + '">' +
+        '<p class="qtxt"><span class="demo-q-n">' + (idx + 1) + '.</span> ' + esc(item.question) + '</p>' +
+        '<div class="demo-opts' + (fmt === 'true_false' ? ' demo-opts--tf' : '') + '">' + opts + '</div>' +
+        (state.checked && picked && correctOpt && picked !== correctOpt.key ?
+          '<p class="demo-reveal">Correct: <b>' + esc(correctOpt.text) + '</b></p>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  function scoreHtml(part){
+    if (!state.checked) return '';
+    var total = part.items.length;
+    var ok = part.items.filter(function(item){
+      var picked = state.answers[item.id];
+      var correct = item.options.find(function(o){ return o.correct; });
+      return picked && correct && picked === correct.key;
+    }).length;
+    return '<p class="demo-score' + (ok === total ? ' demo-score--perfect' : '') + '">' + ok + ' / ' + total + ' correct</p>';
+  }
+
+  function renderWordPop(){
+    if (!state.popWord) return '';
+    var meta = getMarkable(state.popWord);
+    if (!meta) return '';
+    var langs = Object.keys(meta.translations || {});
+    var toggle = langs.map(function(code){
+      return '<button type="button" class="demo-tr-chip' + (state.popTrLang === code ? ' on' : '') + '" data-trlang="' + code + '">' + code.toUpperCase() + '</button>';
+    }).join('');
+    var tr = wordTr(meta, state.popTrLang);
+    var saved = isWordSaved(meta.word, state.exam.lang);
+    return '<div class="demo-pop card" id="demoPop">' +
+      '<p class="demo-pop-word"><b>' + esc(meta.word) + '</b></p>' +
+      '<div class="demo-tr-toggle">' + toggle + '</div>' +
+      '<p class="demo-pop-tr">' + esc(tr) + '</p>' +
+      '<button type="button" class="btn btn-primary btn-block" id="btnSaveWord"' + (saved ? ' disabled' : '') + '>' +
+        (saved ? '✓ Saved' : 'Save to vocabulary') + '</button>' +
+      '<button type="button" class="btn btn-secondary btn-block" id="btnClosePop" style="margin-top:8px">Close</button>' +
+    '</div>';
+  }
+
+  function renderVocabList(exam){
+    var vocab = loadVocab().filter(function(v){ return v.lang === exam.lang; });
+    if (!vocab.length) {
+      return '<p class="note">Tap highlighted words in the passage to save them here.</p>';
+    }
+    return '<div class="demo-vocab-list">' + vocab.map(function(v){
+      var art = artFor(v.lang, v.gender);
+      var artHtml = art ? '<span class="demo-art ' + artClass(art) + '">' + esc(art) + '</span>' : '';
+      var tr = wordTr(v, TR_LANG);
+      return '<div class="demo-vocab-row">' + artHtml + '<b>' + esc(v.word) + '</b><span>' + esc(tr) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function practiceGap(exam, sample){
+    var w = sample.word;
+    var tr = wordTr(sample, TR_LANG);
+    if (exam.lang === 'de') return 'Ich engagiere mich im <span class="loop-gap">___</span>. <span class="loop-reveal">→ ' + esc(w) + '</span>';
+    if (exam.lang === 'es') return 'Me interesa el <span class="loop-gap">___</span>. <span class="loop-reveal">→ ' + esc(w) + '</span>';
+    return 'Many students value a good <span class="loop-gap">___</span>. <span class="loop-reveal">→ ' + esc(w) + '</span>';
+  }
+
+  function practicePhrase(exam, sample){
+    var w = sample.word;
+    if (exam.lang === 'de') return '„Ich möchte ein ' + esc(w) + ' übernehmen."';
+    if (exam.lang === 'es') return '«Me gustaría hacer un ' + esc(w) + ' en mi barrio.»';
+    return '"I would like to improve my ' + esc(w) + ' this year."';
+  }
+
+  function practiceMatch(exam){
+    var vocab = loadVocab().filter(function(v){ return v.lang === exam.lang; });
+    var pairs = vocab.length >= 2 ? vocab.slice(0, 2) : [];
+    if (pairs.length < 2) {
+      var part = readingPart(exam);
+      pairs = (part && part.markableWords) ? part.markableWords.slice(0, 2).map(function(w){
+        return { word: w.word, translations: w.translations, lang: exam.lang };
+      }) : [];
+    }
+    if (pairs.length < 2) return '<span class="note">Save two words to see a match preview.</span>';
+    return pairs.map(function(p){
+      return '<span class="demo-match-pair"><b>' + esc(p.word) + '</b> ⇄ ' + esc(wordTr(p, TR_LANG)) + '</span>';
+    }).join('<span class="demo-match-sep"> · </span>');
+  }
+
+  function renderPracticeCards(exam){
+    var sample = sampleWord(exam);
+    var art = artFor(sample.lang, sample.gender);
+    var artHtml = art ? '<span class="demo-art ' + artClass(art) + '">' + esc(art) + '</span>' : '';
+    var tr = wordTr(sample, TR_LANG);
+    var fcFront = artHtml + '<span class="demo-fc-word">' + esc(sample.word) + '</span>';
+    var fcBack = esc(tr);
+    return '<h2 class="h2 demo-sec-title">Turn your words into practice</h2>' +
+      '<p class="note demo-sec-sub">Teasers — the full app builds these from your saved vocabulary.</p>' +
+      '<div class="demo-practice-grid">' +
+        '<div class="demo-practice-card card">' +
+          '<p class="seclbl">Custom exam</p>' +
+          '<p class="demo-practice-ex">' + practiceGap(exam, sample) + '</p>' +
+        '</div>' +
+        '<div class="demo-practice-card card">' +
+          '<p class="seclbl">Flashcards</p>' +
+          '<div class="demo-fc-mini' + (state.fcFlipped ? ' flipped' : '') + '" id="demoFcMini" tabindex="0" role="button">' +
+            '<div class="demo-fc-front">' +
+              '<button type="button" class="demo-speak" id="btnSpeak" aria-label="Listen">🔊</button>' +
+              fcFront +
+              '<span class="fc-flip-hint">Tap to flip → translation</span>' +
+            '</div>' +
+            '<div class="demo-fc-back">' + fcBack + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="demo-practice-card card">' +
+          '<p class="seclbl">Games</p>' +
+          '<p class="demo-practice-ex demo-match">' + practiceMatch(exam) + '</p>' +
+        '</div>' +
+        '<div class="demo-practice-card card">' +
+          '<p class="seclbl">Daily phrases</p>' +
+          '<p class="demo-practice-ex demo-phrase">' + practicePhrase(exam, sample) + '</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderRegBlock(exam){
+    var bars = MASTERY[exam.lang] || MASTERY.en;
+    var weakest = bars[bars.length - 1];
+    var barsHtml = bars.map(function(b){
+      return '<div class="demo-mastery-row">' +
+        '<span class="demo-mastery-lbl">' + esc(b.label) + '</span>' +
+        '<div class="demo-mastery-track"><div class="demo-mastery-fill demo-mastery-fill--' + b.tone + '" style="width:' + b.pct + '%"></div></div>' +
+        '<span class="demo-mastery-pct">' + b.pct + '%</span></div>';
+    }).join('');
+    var focusLine = 'Your next practice focuses on ' + weakest.label + ' — your weakest area.';
+    return '<div class="demo-reg-block">' +
+      '<h2 class="h2">Create a free account to unlock the full path</h2>' +
+      '<p class="demo-reg-lede">Practice with exams that closely follow the official format — Goethe, Cambridge and DELE.</p>' +
+      '<div class="demo-mode-pair">' +
+        '<div class="demo-mode-card">' +
+          '<p class="demo-mode-name">Exam mode</p>' +
+          '<p class="demo-mode-desc">Timed, official conditions, no lookups — like the real test day.</p>' +
+        '</div>' +
+        '<div class="demo-mode-card">' +
+          '<p class="demo-mode-name">Practice mode</p>' +
+          '<p class="demo-mode-desc">Look up and save any word as you go, at your own pace.</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="demo-mastery">' +
+        '<p class="seclbl">Progress &amp; error tracking</p>' +
+        '<p class="note" style="margin:0 0 12px">The app records <em>why</em> you miss a question, by grammar topic, and builds your study plan from weakest areas.</p>' +
+        barsHtml +
+        '<p class="demo-mastery-focus">' + esc(focusLine) + '</p>' +
+      '</div>' +
+      '<a class="btn btn-primary" href="/app.html?auth=register">Create free account →</a>' +
+      '<span class="demo-reg-sm">Free plan · no card required</span>' +
+    '</div>';
+  }
+
+  function renderDemo(){
+    var exam = state.exam;
+    if (!exam) return;
+    var part = readingPart(exam);
+    if (!part) {
+      root.innerHTML = '<p class="err">Reading part missing in demo data.</p>';
+      return;
+    }
+    var mod = exam.modules[0];
+    root.innerHTML =
+      '<button type="button" class="btn btn-secondary" id="btnBack" style="margin-bottom:8px">← Choose another level</button>' +
+      '<div class="card accent">' +
+        '<p class="kicker">Your goal</p>' +
+        '<p class="h2">' + esc(exam.certificate) + '</p>' +
+        '<p class="goal-sub">' + esc(exam.board) + ' · ' + esc(exam.level) + ' · ' + esc(exam.topic) + '</p>' +
+      '</div>' +
+      '<div class="card demo-reading">' +
+        '<p class="seclbl">' + esc(mod.title) + ' · ' + esc(part.label || 'Part 1') + '</p>' +
+        '<p class="note" style="margin:0 0 12px">' + esc(part.instructions || '') + '</p>' +
+        '<div class="passage demo-passage">' + passageHtml(part.passage, part.markableWords, exam.lang) + '</div>' +
+        (state.popWord ? renderWordPop() : '<p class="note demo-tap-hint">Tap highlighted words to see translations and save them.</p>') +
+        '<div class="demo-questions">' + renderQuestions(part) + '</div>' +
+        (state.checked ? scoreHtml(part) : '<button type="button" class="btn btn-primary btn-block" id="btnCheck"' +
+          (Object.keys(state.answers).length < part.items.length ? ' disabled' : '') + '>Check answers</button>') +
+      '</div>' +
+      '<div class="card demo-vocab-sec">' +
+        '<p class="seclbl">Vocabulary · ' + loadVocab().filter(function(v){ return v.lang === exam.lang; }).length + ' saved</p>' +
+        renderVocabList(exam) +
+      '</div>' +
+      renderPracticeCards(exam) +
+      renderRegBlock(exam);
+
+    document.getElementById('btnBack').addEventListener('click', function(){
+      state.exam = null;
+      renderPick();
+    });
+
+    root.querySelectorAll('.passage .w').forEach(function(el){
+      function open(){ state.popWord = el.dataset.word; state.popTrLang = TR_LANG; renderDemo(); }
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+    });
+
+    root.querySelectorAll('[data-trlang]').forEach(function(btn){
+      btn.addEventListener('click', function(){ state.popTrLang = btn.dataset.trlang; renderDemo(); });
+    });
+
+    var saveBtn = document.getElementById('btnSaveWord');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function(){
+        var meta = getMarkable(state.popWord);
+        if (!meta) return;
+        saveWord({
+          word: meta.word,
+          lang: exam.lang,
+          gender: meta.gender,
+          pos: meta.pos,
+          translations: meta.translations,
+          source: exam.id,
+          savedAt: new Date().toISOString()
+        });
+        renderDemo();
+      });
+    }
+    var closePop = document.getElementById('btnClosePop');
+    if (closePop) closePop.addEventListener('click', function(){ state.popWord = null; renderDemo(); });
+
+    root.querySelectorAll('[data-item]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        state.answers[inp.dataset.item] = inp.dataset.key;
+        state.checked = false;
+        renderDemo();
+      });
+    });
+
+    var checkBtn = document.getElementById('btnCheck');
+    if (checkBtn) checkBtn.addEventListener('click', function(){ state.checked = true; renderDemo(); });
+
+    var fc = document.getElementById('demoFcMini');
+    if (fc) fc.addEventListener('click', function(e){
+      if (e.target.closest('.demo-speak')) return;
+      state.fcFlipped = !state.fcFlipped;
+      fc.classList.toggle('flipped', state.fcFlipped);
+    });
+    var speakBtn = document.getElementById('btnSpeak');
+    if (speakBtn) {
+      speakBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var s = sampleWord(exam);
+        speakWord(s.word, exam.lang);
+      });
+    }
+  }
+
+  parseQuery();
+  if (state.lang && state.level && isOpenLevel(state.level) && new URLSearchParams(location.search).has('lang')) {
+    startDemo();
+  } else {
+    renderPick();
+  }
+})();
+</script>
+</body>
+</html>
