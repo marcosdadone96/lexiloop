@@ -992,18 +992,6 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .stat-tile__val{font-size:20px;font-weight:700;color:var(--text)}
 .stat-tile__lbl{font-size:10px;font-weight:600;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
 .stat-tile__val.up{color:var(--green)}
-/* PRACTICE / LEARN HUB */
-.hub-screen{display:none;padding:8px 0 40px;animation:fadeUp .35s ease}
-.hub-title{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
-.hub-sub{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:24px;line-height:1.6}
-.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.hub-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:all .2s}
-.hub-card:hover{border-color:var(--accent);background:var(--bg3);transform:translateY(-2px)}
-.hub-card--primary{border-color:rgba(37,99,235,.25);background:var(--accent-dim)}
-.hub-card__icon{font-size:24px;margin-bottom:10px}
-.hub-card__title{font-size:15px;font-weight:700;margin-bottom:4px}
-.hub-card__desc{font-size:12px;font-weight:600;color:var(--text2);line-height:1.5}
-.hub-card__tag{display:inline-block;margin-top:10px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:var(--bg3);color:var(--text3)}
 .loop-context{font-size:12px;font-weight:600;color:var(--text2);padding:12px 16px;background:var(--bg3);border-radius:var(--r);margin-bottom:18px;line-height:1.55;border-left:3px solid var(--accent)}
 .loop-context b{color:var(--text);font-weight:700}
 .results-loop{margin:18px 0;padding:16px 18px;background:var(--accent-dim);border:1px solid rgba(37,99,235,.2);border-radius:var(--r-lg)}
@@ -1047,7 +1035,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .app-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 12px calc(8px + env(safe-area-inset-bottom));z-index:200;gap:4px}
 .app-bottom-nav .app-nav__item{flex:1;font-size:11px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
 @media(max-width:620px){
-  .subject-grid,.mode-row,.levels-grid,.mode-select-row,.module-scores-grid,.ve-opts,.saved-grid,.coach-grid,.hub-grid{grid-template-columns:1fr}
+  .subject-grid,.mode-row,.levels-grid,.mode-select-row,.module-scores-grid,.ve-opts,.saved-grid,.coach-grid{grid-template-columns:1fr}
   .coach-card--hero,.coach-card--action{grid-column:1}
   .stat-tiles{grid-template-columns:1fr 1fr 1fr}
   .home-headline{font-size:34px}
@@ -1271,107 +1259,6 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
   <button type="button" class="btn-start" onclick="startExamFromModeChooser()">Start exam →</button>
 </div>
 
-<!-- LEARN HUB -->
-<div id="learnHubScreen" class="hub-screen">
-  <div class="loop-strip"><span class="loop-step"><strong>Mistake</strong></span><span class="loop-arrow">→</span><span class="loop-step"><strong>Vocabulary</strong></span><span class="loop-arrow">→</span><span class="loop-step"><strong>Practice</strong></span></div>
-  <h2 class="hub-title">Learn</h2>
-  <p class="hub-sub">Words you save during practice come from real exam mistakes. Review them before your next personalized test.</p>
-  <div class="loop-context" id="learnHubContext">Your deck grows every time you click a word you don't know during <b>Practice Mode</b>.</div>
-  <div class="hub-grid">
-    <div class="hub-card hub-card--primary" onclick="goFlashcards()">
-      <div class="hub-card__icon">🗂️</div>
-      <div class="hub-card__title">Flashcard review</div>
-      <div class="hub-card__desc">One tool for strengthening weak vocabulary — not the main outcome, but essential before a personalized exam.</div>
-      <span class="hub-card__tag" id="learnFcBadge">0 words</span>
-    </div>
-    <div class="hub-card" onclick="goFlashcards();setFcTab('due')">
-      <div class="hub-card__icon">🔄</div>
-      <div class="hub-card__title">Due for Review</div>
-      <div class="hub-card__desc">Spaced repetition keeps weak vocabulary fresh until you master it.</div>
-      <span class="hub-card__tag" id="learnDueBadge">0 due</span>
-    </div>
-    <div class="hub-card" onclick="goFlashcards();setFcTab('study')">
-      <div class="hub-card__icon">📚</div>
-      <div class="hub-card__title">Study Session</div>
-      <div class="hub-card__desc">Focused review of cards that need attention right now.</div>
-    </div>
-    <div class="hub-card" onclick="goFlashcards();document.getElementById('btnPersonalExam')?.scrollIntoView({behavior:'smooth'})">
-      <div class="hub-card__icon">✨</div>
-      <div class="hub-card__title">Vocabulary Quiz</div>
-      <div class="hub-card__desc">Quick text or audio quiz on selected deck words.</div>
-    </div>
-  </div>
-</div>
-
-<!-- PRACTICE HUB -->
-<div id="practiceHubScreen" class="hub-screen">
-  <div class="loop-strip"><span class="loop-step"><strong>Exam</strong></span><span class="loop-arrow">→</span><span class="loop-step"><strong>Mistake</strong></span><span class="loop-arrow">→</span><span class="loop-step"><strong>Improvement</strong></span></div>
-  <h2 class="hub-title">Practice</h2>
-  <p class="hub-sub">Choose how you want to practice today. Every session moves you closer to exam day.</p>
-  <div class="hub-grid">
-    <div class="hub-card hub-card--primary" onclick="location.href='/demo'">
-      <div class="hub-card__icon">🎬</div>
-      <div class="hub-card__title">Sample exam</div>
-      <div class="hub-card__desc">Try the static demo — reading, listening, vocabulary and writing preview.</div>
-      <span class="hub-card__tag">No account</span>
-    </div>
-    <div class="hub-card" onclick="startMockExam()">
-      <div class="hub-card__icon">🎯</div>
-      <div class="hub-card__title">Practice exam</div>
-      <div class="hub-card__desc">General mock test on an official topic. Baseline assessment — save words you miss in practice mode.</div>
-    </div>
-    <div class="hub-card" onclick="startPersonalExam()">
-      <div class="hub-card__icon">✨</div>
-      <div class="hub-card__title">Personalized exam</div>
-      <div class="hub-card__desc">Built from vocabulary you saved after mistakes — not a generic topic test.</div>
-      <span class="hub-card__tag" id="practicePersonalBadge">0 words available</span>
-    </div>
-    <div class="hub-card" onclick="showQuickPractice()">
-      <div class="hub-card__icon">⚡</div>
-      <div class="hub-card__title">Quick Exam</div>
-      <div class="hub-card__desc">Single module practice — reading, listening, writing or gap-fill. No quota cost.</div>
-    </div>
-    <div class="hub-card" onclick="location.href='oral.html'">
-      <div class="hub-card__icon">🎙</div>
-      <div class="hub-card__title">Oral Exam</div>
-      <div class="hub-card__desc">Speaking practice with AI evaluation. IELTS and Goethe rubric.</div>
-      <span class="hub-card__tag">Beta</span>
-    </div>
-  </div>
-  <div id="quickPracticePanel" style="display:none;margin-top:20px">
-    <div class="coach-label" style="margin-bottom:12px">Quick module — pick one skill</div>
-    <div class="quick-btns">
-      <button class="quick-btn" onclick="startQuick('reading')">Reading</button>
-      <button class="quick-btn" onclick="startQuick('listening')">Listening</button>
-      <button class="quick-btn" onclick="startQuick('writing')">Writing</button>
-      <button class="quick-btn" onclick="startQuick('gapfill')">Gap-Fill</button>
-    </div>
-  </div>
-  <div style="margin-top:24px">
-    <div class="coach-label" style="margin-bottom:12px">Choose language & level</div>
-    <div class="subject-grid">
-      <div class="subject-card" onclick="selectSubject('de')">
-        <span class="sc-flag">🇩🇪</span>
-        <div class="sc-lang">German — Goethe</div>
-        <div class="sc-desc">Official Goethe-Institut format, A1 to C2.</div>
-        <div class="sc-footer"><span class="sc-cta">Choose level</span><span class="sc-arrow">→</span></div>
-      </div>
-      <div class="subject-card" onclick="selectSubject('en')">
-        <span class="sc-flag">🇬🇧</span>
-        <div class="sc-lang">English — Cambridge</div>
-        <div class="sc-desc">Cambridge CEFR format, A1 to C2.</div>
-        <div class="sc-footer"><span class="sc-cta">Choose level</span><span class="sc-arrow">→</span></div>
-      </div>
-      <div class="subject-card" onclick="selectSubject('es')">
-        <span class="sc-flag">🇪🇸</span>
-        <div class="sc-lang">Spanish — DELE</div>
-        <div class="sc-desc">Official DELE format, A1 to C2.</div>
-        <div class="sc-footer"><span class="sc-cta">Choose level</span><span class="sc-arrow">→</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- LEVEL SCREEN -->
 <div id="levelScreen">
   <button class="back-btn" onclick="backFromLevelScreen()">← Workspace</button>
@@ -1388,6 +1275,15 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
   <div id="quotaWarning" style="display:none;background:var(--orange-bg);border:.5px solid rgba(249,115,22,.3);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--orange);margin-bottom:14px"></div>
   <button class="btn-start" id="btnStart" disabled onclick="handleGenerateExam()">Generate Exam →</button>
   <button class="btn-demo" id="btnDemo" type="button" style="display:none" onclick="generateDemoExam()">Try free demo (no quota)</button>
+  <div id="quickPracticePanel" style="display:none;margin-top:20px">
+    <div class="coach-label" style="margin-bottom:12px">Quick module — pick one skill</div>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="startQuick('reading')">Reading</button>
+      <button class="quick-btn" onclick="startQuick('listening')">Listening</button>
+      <button class="quick-btn" onclick="startQuick('writing')">Writing</button>
+      <button class="quick-btn" onclick="startQuick('gapfill')">Gap-Fill</button>
+    </div>
+  </div>
 </div>
 
 <!-- LOADING -->
@@ -3069,9 +2965,6 @@ function updBadges(){
   const due=fc.filter(f=>isDue(f)).length;
   const fcLbl=fc.length+(fc.length===1?' word':' words');
   const b=document.getElementById('fcCountBadge');if(b)b.textContent=fcLbl;
-  const lfb=document.getElementById('learnFcBadge');if(lfb)lfb.textContent=fcLbl;
-  const ldb=document.getElementById('learnDueBadge');if(ldb)ldb.textContent=due+' due';
-  const ppb=document.getElementById('practicePersonalBadge');if(ppb)ppb.textContent=fc.length+' words available';
   const dt=document.getElementById('fcTabDue');if(dt)dt.textContent='Due for Review'+(due?` (${due})`:'');
   const hb=document.getElementById('histBadge');if(hb)hb.textContent=getProfileHistory().length+' exam'+(getProfileHistory().length!==1?'s':'');
   renderProfileBar();renderCoachDashboard();
@@ -3166,9 +3059,6 @@ function renderCoachDashboard(){
   const sv=document.getElementById('coachStatVocab');if(sv)sv.textContent=activeGoal?deckForGoal(activeGoal).length:getProfileFlashcards().length;
   const st=document.getElementById('coachStatTrend');
   if(st){const tr=getScoreTrend();if(tr===null)st.textContent='—';else{st.textContent=(tr>=0?'+':'')+tr+'%';st.classList.toggle('up',tr>=0);}}
-  const lhc=document.getElementById('learnHubContext');
-  const fcN=getProfileFlashcards().length;
-  if(lhc&&fcN)lhc.innerHTML='You have <b>'+fcN+' words</b> saved from exam mistakes in your <b>'+getPreparingFor()+'</b> profile. Review them to build your next personalized test.';
 }
 function runRecommendedAction(){if(_coachAction)_coachAction();}
 function setNavActive(section){
@@ -3201,7 +3091,7 @@ function showQuickPractice(){
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const SCREENS=['homeScreen','goalWorkspaceScreen','examConfigScreen','modeChooserScreen','profileSetupScreen','learnHubScreen','practiceHubScreen','levelScreen','loadingScreen','examScreen','resultsScreen','mistakeReviewScreen','flashcardScreen','vocabExamScreen','historyScreen','savedExamsScreen'];
+const SCREENS=['homeScreen','goalWorkspaceScreen','examConfigScreen','modeChooserScreen','profileSetupScreen','levelScreen','loadingScreen','examScreen','resultsScreen','mistakeReviewScreen','flashcardScreen','vocabExamScreen','historyScreen','savedExamsScreen'];
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 function hideAll(){flushOpenStudySession();SCREENS.forEach(hide);stopTimer();showExamConfigFootbar(false);showModeChooserFootbar(false);}
