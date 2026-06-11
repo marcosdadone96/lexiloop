@@ -220,7 +220,7 @@
       if (typeof fetchExamFromPool === 'function') {
         setLoaderStep('Checking exam pool\u2026', 'Looking for a shared cached exam\u2026');
         try {
-          const pooled = await fetchExamFromPool(S.subject, S.level);
+          const pooled = await fetchExamFromPool(S.subject, S.level, seenPoolIds(S.subject, S.level));
           if (pooled?.found && pooled.exam) {
             const normalized = typeof normalizeExam === 'function' ? normalizeExam(pooled.exam) : pooled.exam;
             if (
@@ -232,6 +232,7 @@
               S.examData = normalized;
               S.examData.topic = pooled.topic || normalized.topic || 'Shared exam';
               S.examData.poolSource = true;
+              S.examData.poolId = pooled.id || null;
               S.examSource = 'pool';
               renderExam();
               return;

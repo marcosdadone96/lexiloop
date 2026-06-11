@@ -149,8 +149,12 @@ async function commitExamQuota() {
   }
 }
 
-async function fetchExamFromPool(lang, level) {
-  const q = new URLSearchParams({ lang, level });
+async function fetchExamFromPool(lang, level, excludeIds) {
+  const params = { lang, level };
+  if (excludeIds && excludeIds.length) {
+    params.exclude = excludeIds.slice(0, 40).join(',');
+  }
+  const q = new URLSearchParams(params);
   const res = await fetch(`/.netlify/functions/exam-pool?${q}`);
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.found) return null;

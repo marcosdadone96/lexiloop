@@ -1,6 +1,11 @@
 // ═══════════════════════════════════════════
 // EXAM GENERATION
 // ═══════════════════════════════════════════
+function seenPoolIds(subject, level) {
+  return (S.history || [])
+    .filter((h) => h.lang === subject && h.level === level && h.poolId)
+    .map((h) => h.poolId);
+}
 function normalizeCambridgeExam(d){
   if(!d||(!d.readingParts&&!d.listeningParts))return d;
   d.cambridgeFormat=true;
@@ -403,7 +408,7 @@ function buildPoolExamCopy(exam,topic){
   const copy=JSON.parse(JSON.stringify(exam));
   delete copy.vocabPersonal;delete copy.vocabWords;delete copy.vocabSkills;
   delete copy.goalId;delete copy._savedId;delete copy._flightId;
-  delete copy.poolSource;delete copy.guidedDemo;
+  delete copy.poolSource;delete copy.poolId;delete copy.guidedDemo;
   copy.topic=topic;
   return copy;
 }
@@ -540,7 +545,7 @@ async function generatePersonalExam(words,skills,goalId){
     if(typeof fetchExamFromPool==='function'){
       document.getElementById('loaderSub').textContent='Checking shared pool for a matching exam…';
       try{
-        const pooled=await fetchExamFromPool(S.subject,S.level);
+        const pooled=await fetchExamFromPool(S.subject,S.level,seenPoolIds(S.subject,S.level));
         if(pooled?.found&&pooled.exam){
           let candidate=normalizeExam(pooled.exam);
           candidate=stripExamToSkills(JSON.parse(JSON.stringify(candidate)),configSkills);
@@ -552,6 +557,7 @@ async function generatePersonalExam(words,skills,goalId){
             S.examData.vocabWords=configWords;
             S.examData.vocabSkills=configSkills;
             S.examData.poolSource=true;
+            S.examData.poolId=pooled.id||null;
             S.examSource='pool';
             if(configGoalId||S.activeGoalId)S.examData.goalId=configGoalId||S.activeGoalId;
             S.examData.topic='Personal: '+configWords.slice(0,3).join(', ')+(configWords.length>3?'…':'');
