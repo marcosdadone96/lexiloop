@@ -807,7 +807,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 @media(min-width:640px){.exam-config-h1{font-size:26px}}
 .exam-config-lede{font-size:14px;font-weight:500;color:var(--text2);margin:0 0 18px;line-height:1.55}
 .exam-config-seclbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.exam-config-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:18px}
+.exam-config-panel{background:var(--surface,var(--bg2));border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-card,0 1px 3px rgba(15,23,42,.06));padding:18px;margin-bottom:18px}
 .exam-config-chips{display:flex;flex-wrap:wrap;gap:8px}
 .exam-config-chip{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 13px;border:1px solid var(--border);border-radius:99px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;background:var(--bg2)}
 .exam-config-chip.on{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
@@ -868,7 +868,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .exam-config-steps{display:flex;gap:8px;margin-bottom:16px}
 .exam-config-step{flex:1;text-align:center;font-size:11px;font-weight:700;padding:8px 6px;border-radius:8px;color:var(--text3);background:var(--bg3)}
 .exam-config-step.on{color:var(--accent);background:var(--accent-dim)}
-.exam-config-part-card{min-height:56px;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;cursor:pointer;background:var(--bg2);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.exam-config-part-card{min-height:56px;border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;cursor:pointer;background:var(--surface,var(--bg2));box-shadow:var(--shadow-card,0 1px 3px rgba(15,23,42,.06));display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .exam-config-part-card.on{border-color:var(--accent);background:var(--accent-dim)}
 .exam-config-part-card .n{font-size:15px;font-weight:700;color:var(--text)}
 .exam-config-part-card .n small{display:block;font-size:11px;font-weight:500;color:var(--text3);margin-top:2px}
@@ -913,7 +913,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 @media(max-width:639px){.exam-config-footbar{flex-direction:column;align-items:stretch}.exam-config-footbar .summary{text-align:center}.exam-config-footbar .btn-gen{width:100%}}
 /* MODE CHOOSER */
 #modeChooserScreen{display:none;padding:8px 0 110px;animation:fadeUp .35s ease}
-.mode-opt{min-height:44px;border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;cursor:pointer;background:var(--bg2)}
+.mode-opt{min-height:44px;border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;cursor:pointer;background:var(--surface,var(--bg2));box-shadow:var(--shadow-card,0 1px 3px rgba(15,23,42,.06))}
 .mode-opt.sel{border:2px solid var(--accent);background:var(--accent-dim)}
 .mode-opt-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .mode-opt h3{font-size:15px;font-weight:700;margin:0;color:var(--text)}
@@ -922,10 +922,10 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .mode-opt ul{margin:0;padding-left:16px;font-size:12px;font-weight:500;color:var(--text2);line-height:1.7}
 .mode-ex-grid{display:grid;gap:14px;grid-template-columns:1fr;margin-bottom:18px}
 @media(min-width:640px){.mode-ex-grid{grid-template-columns:1fr 1fr}}
-.mode-ex{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--bg2);overflow:hidden}
+.mode-ex{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface,var(--bg2));box-shadow:var(--shadow-card,0 1px 3px rgba(15,23,42,.06));overflow:hidden}
 .mode-ex-h{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700}
 .mode-ex.off .mode-ex-h{color:var(--text2)}
-.mode-ex.prac .mode-ex-h{color:#185fa5}
+.mode-ex.prac .mode-ex-h{color:var(--accent)}
 .mode-ex-b{padding:13px}
 .mode-ex-q{font-size:13px;line-height:1.7;color:var(--text2)}
 .mode-markmsg{margin-top:10px;font-size:11px;font-weight:600;color:var(--orange);background:rgba(245,158,11,.1);border-radius:8px;padding:8px 10px}
