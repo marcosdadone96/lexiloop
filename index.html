@@ -442,9 +442,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 /* FLASHCARDS */
 #flashcardScreen{display:none;padding:38px 0;animation:fadeUp .35s ease}
 .fc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
-.fc-title h2{font-family:var(--lc-font),serif;font-size:28px;margin-bottom:3px}
-.fc-title h2 em{color:var(--purple);font-style:italic}
-.fc-title p{font-size:13px;color:var(--text2);font-weight:400}
+.fc-title p{font-size:13px;color:var(--text2);font-weight:500}
 .fc-head-actions{display:flex;gap:7px;flex-wrap:wrap}
 .fc-tabs{display:flex;background:var(--bg3);border:.5px solid var(--border2);border-radius:10px;padding:3px;gap:2px;margin-bottom:18px}
 .fc-tab{flex:1;padding:7px 10px;font-family:var(--lc-font);font-size:11px;font-weight:700;letter-spacing:.03em;background:transparent;border:none;color:var(--text3);cursor:pointer;border-radius:7px;transition:all .2s;white-space:nowrap}
@@ -461,8 +459,8 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .fc-type-section:first-child{border-top:none;margin-top:0;padding-top:0}
 .fc-empty{text-align:center;padding:48px 0;color:var(--text3);font-size:13px;font-weight:400;border:.5px dashed var(--border2);border-radius:var(--r-lg);grid-column:1/-1}
 .fc-empty span{font-size:28px;display:block;margin-bottom:9px;opacity:.4}
-.fc-card{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .25s;position:relative;min-height:126px;display:flex;flex-direction:column;justify-content:space-between}
-.fc-card:hover{border-color:var(--purple);background:var(--bg3);transform:translateY(-2px)}
+.fc-card{background:var(--surface,var(--bg2));border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-card,0 1px 3px rgba(15,23,42,.06));padding:16px;cursor:pointer;transition:border-color .2s,transform .2s;position:relative;min-height:126px;display:flex;flex-direction:column;justify-content:space-between}
+.fc-card:hover{border-color:var(--border-strong,var(--border2));transform:translateY(-2px)}
 .fc-card.due-now{border-color:rgba(249,115,22,.45)!important}
 .fc-card.due-now::before{content:'Review';position:absolute;top:-6px;right:10px;font-size:9px;font-weight:700;background:var(--orange);color:#fff;padding:1px 7px;border-radius:4px}
 .fc-card.flipped .fc-front{display:none}.fc-card.flipped .fc-back{display:flex}
@@ -881,7 +879,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .fc-single-inner.flipped{transform:rotateY(180deg)}
 .fc-single-face{position:absolute;inset:0;padding:24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;backface-visibility:hidden;border-radius:var(--r-lg)}
 .fc-single-back{transform:rotateY(180deg)}
-.fc-single-word{font-size:32px;font-weight:800;font-family:var(--lc-font),serif;font-style:italic;margin-bottom:8px;color:var(--text)}
+.fc-single-word{font-size:32px;font-weight:700;font-family:var(--lc-font);letter-spacing:-.02em;margin-bottom:8px;color:var(--text)}
 .fc-single-phon{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:10px}
 .fc-single-trans{font-size:22px;font-weight:700;color:var(--purple);margin-bottom:8px}
 .fc-single-ex{font-size:12px;color:var(--text2);font-style:italic;line-height:1.5}
@@ -1308,9 +1306,9 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
   <p id="fcHubWordsLbl" class="deck-hub-seclbl" style="display:none">Your words</p>
   <p id="fcHubFootnote" class="deck-hub-foot" style="display:none"></p>
   <div id="fcLegacyTop">
-  <div class="loop-context" id="fcLoopContext">These words were <b>identified from your exam mistakes</b>. Select weak words and generate a personal mock exam to practice them in context.</div>
+  <div class="card note-card" id="fcLoopContext" style="margin-bottom:18px">These words were <b>identified from your exam mistakes</b>. Select weak words and generate a personal mock exam to practice them in context.</div>
   <div class="fc-header" id="fcLegacyHeader">
-    <div class="fc-title"><h2 style="font-family:var(--lc-font);font-weight:700;font-style:normal">Your <span style="color:var(--accent)">Vocabulary</span></h2><p>Evidence from your exams — each word shows where it was detected and why it matters</p></div>
+    <div class="fc-title"><h2 class="screen-h1">Your vocabulary</h2><p>Evidence from your exams — each word shows where it was detected and why it matters</p></div>
     <div class="fc-head-actions">
       <button class="btn-sm" onclick="goFlashcards(true)">← Home</button>
       <button class="btn-sm red" id="fcClearBtn" onclick="clearFC()" style="display:none">Clear All</button>
