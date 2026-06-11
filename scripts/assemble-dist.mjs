@@ -16,7 +16,7 @@ const COPY_DIRS = ['js', 'data', 'assets', 'knowledge', 'library'];
 
 function copyDesignSystem() {
   const destDir = path.join(DIST, 'assets', 'css');
-  const sheets = ['lexicoil-design-system.css', 'app-screens.css', 'demo-loop.css'];
+  const sheets = ['lexicoil-design-system.css', 'app.css', 'app-screens.css', 'demo-loop.css'];
   ensureDir(destDir);
   for (const name of sheets) {
     const src = path.join(ROOT, 'assets', 'css', name);
@@ -140,6 +140,14 @@ if (fs.existsSync(DIST)) {
 }
 ensureDir(DIST);
 
+function syncLandingDesignSystem() {
+  const src = path.join(ROOT, 'assets', 'css', 'lexicoil-design-system.css');
+  const destDir = path.join(ROOT, 'landing', 'public', 'assets', 'css');
+  ensureDir(destDir);
+  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(destDir, 'lexicoil-design-system.css'));
+}
+
+syncLandingDesignSystem();
 copyLanding();
 copyAppAssets();
 copyDesignSystem();

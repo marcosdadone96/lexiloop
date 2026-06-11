@@ -104,9 +104,6 @@ function selectDashboardGoal(id){
 function renderDashboardCoachHtml(goal){
   const act=getRecommendedActionForGoal(goal);
   _coachAction=act.run;
-  const t=document.getElementById('coachActionTitle');if(t)t.textContent=act.title;
-  const d=document.getElementById('coachActionDesc');if(d)d.textContent=act.desc;
-  const c=document.getElementById('coachActionCta');if(c)c.textContent=act.cta;
   return'<div class="dash-coach">'+
     '<div class="dash-coach-ico" aria-hidden="true">🚀</div>'+
     '<div class="dash-coach-body">'+
@@ -327,6 +324,5 @@ function renderHomeScreen(){
     '<button type="button" class="btn-sm accent" onclick="showAddGoalWizard()">+ Add exam goal</button></div></div>';
   const goalsRow=renderGoalCardsRow();
   area.innerHTML=head+goalsRow+renderDashboardBodyHtml(dashGoal);
-  renderCoachDashboard();
   if(_showDashCustomize)renderDashboardCustomizeModal();
 }

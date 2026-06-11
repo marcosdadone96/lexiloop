@@ -17,21 +17,6 @@ function getPreparingFor(){
   if(hist.length){const h=hist[0];return certLbl(h.lang,h.level);}
   return 'Choose your exam';
 }
-function getWeakAreas(){
-  const topicScores={};
-  getProfileHistory().forEach(h=>{if(!h.topic)return;(topicScores[h.topic]=topicScores[h.topic]||[]).push(h.score);});
-  const weak=Object.entries(topicScores).map(([topic,scores])=>({topic,avg:scores.reduce((a,b)=>a+b,0)/scores.length})).filter(x=>x.avg<70).sort((a,b)=>a.avg-b.avg).slice(0,3).map(x=>x.topic);
-  if(weak.length)return weak;
-  const dueWords=getProfileFlashcards().filter(f=>isDue(f)).slice(0,3).map(f=>f.word);
-  if(dueWords.length)return dueWords;
-  return [];
-}
-function getScoreTrend(){
-  const hist=getProfileHistory();
-  if(hist.length<2)return null;
-  const a=hist[0].score,b=hist[1].score;
-  return a-b;
-}
 function workspaceAction(tab,fn){
   return ()=>{
     const goal=getActiveGoal()||S.goals[0];
@@ -62,20 +47,8 @@ function getRecommendedAction(){
 let _coachAction=null;
 function renderCoachDashboard(){
   const activeGoal=dashboardGoal();
-  const histLen=activeGoal?historyForGoal(activeGoal).length:getProfileHistory().length;
-  const weakEl=document.getElementById('coachWeakAreas');
-  if(weakEl){
-    const areas=activeGoal?getWeakAreasForGoal(activeGoal):getWeakAreas();
-    weakEl.innerHTML=areas.length?areas.map(a=>'<li>'+esc(a)+'</li>').join(''):'<li class="weak-empty">Complete a practice exam to identify weak areas</li>';
-  }
-  const act=activeGoal?getRecommendedActionForGoal(activeGoal):getRecommendedAction();_coachAction=act.run;
-  const t=document.getElementById('coachActionTitle');if(t)t.textContent=act.title;
-  const d=document.getElementById('coachActionDesc');if(d)d.textContent=act.desc;
-  const c=document.getElementById('coachActionCta');if(c)c.textContent=act.cta;
-  const se=document.getElementById('coachStatExams');if(se)se.textContent=histLen;
-  const sv=document.getElementById('coachStatVocab');if(sv)sv.textContent=activeGoal?deckForGoal(activeGoal).length:getProfileFlashcards().length;
-  const st=document.getElementById('coachStatTrend');
-  if(st){const tr=getScoreTrend();if(tr===null)st.textContent='—';else{st.textContent=(tr>=0?'+':'')+tr+'%';st.classList.toggle('up',tr>=0);}}
+  const act=activeGoal?getRecommendedActionForGoal(activeGoal):getRecommendedAction();
+  _coachAction=act.run;
 }
 function runRecommendedAction(){if(_coachAction)_coachAction();}
 function setNavActive(section){

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "netlify dev",
-    "build:landing": "cd landing && npm install && npm run build",
+    "build:landing": "node scripts/sync-design-system.mjs && cd landing && npm install && npm run build",
     "build:site": "npm run build:landing && node scripts/assemble-dist.mjs",
     "dev:landing": "cd landing && npm run dev",
     "validate:knowledge": "node scripts/validate-knowledge.mjs",
