@@ -323,7 +323,7 @@ async function submitExam(){
   const correction=buildCorrection(d,isDE,writeAns,speakAns);
   let savedWords=[...(S.examSavedWords||[])];
   S.lastMarkedWords=S.activeSession?.markedWords?[...S.activeSession.markedWords]:[];
-  const entry={id:Date.now(),date:new Date().toLocaleDateString(),topic:d.topic,level:d.level,lang:d.lang,score,moduleScores,mode:normalizeMode(S.mode),demo:!!d.demo,guidedDemo:!!d.guidedDemo,correction,savedWords,markedWords:S.lastMarkedWords.map(m=>m.word),examSource:S.examSource||null};
+  const entry={id:Date.now(),date:new Date().toLocaleDateString(),topic:d.topic,level:d.level,lang:d.lang,score,moduleScores,mode:normalizeMode(S.mode),demo:!!d.demo,guidedDemo:!!d.guidedDemo,correction,savedWords,markedWords:S.lastMarkedWords.map(m=>m.word),examSource:S.examSource||null,poolId:S.examData?.poolId||null};
   if(typeof AnalyticsStore!=='undefined'){
     const goal=getActiveGoal()||S.goals.find(g=>g.id===d.goalId);
     entry.tagStats=AnalyticsStore.recordExamResult(goal,entry,d,S.answers);
