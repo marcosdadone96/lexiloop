@@ -507,8 +507,7 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
 .ve-sb{display:flex;justify-content:space-between;font-size:12px;color:var(--text3);font-weight:600;margin-bottom:7px}
 .ve-big{font-size:58px;font-weight:800;letter-spacing:-3px;line-height:1}
 .ve-big.pass{color:var(--green)}.ve-big.mid{color:var(--accent)}.ve-big.fail{color:var(--red)}
-/* SAVED EXAMS */
-#savedExamsScreen{display:none;padding:38px 0;animation:fadeUp .35s ease}
+/* SAVED EXAMS (cards reused by workspace wsSavedGrid) */
 .saved-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .saved-card{background:var(--bg2);border:.5px solid var(--border);border-radius:var(--r-lg);padding:18px;cursor:pointer;transition:all .2s;position:relative}
 .saved-card:hover{border-color:var(--accent);background:var(--bg3)}
@@ -1345,13 +1344,6 @@ body.light,[data-theme='light'] body{background:var(--bg);color:var(--text)}
     </div>
     <p style="font-size:12px;font-weight:600;color:var(--text2)">All statistics are scoped to your active exam profile.</p>
   </div>
-</div>
-<div id="savedExamsScreen">
-  <button class="back-btn" onclick="goHome()">← Home</button>
-  <div class="screen-eyebrow">Your library</div>
-  <h2 class="screen-title">Saved <em>Exams</em></h2>
-  <p style="font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:400">Retake any saved exam — it won't count toward your monthly quota.</p>
-  <div class="saved-grid" id="savedGrid"></div>
 </div>
 <div id="flashcardScreen">
   <div id="fcHubNav" style="display:none">
@@ -3091,7 +3083,7 @@ function showQuickPractice(){
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const SCREENS=['homeScreen','goalWorkspaceScreen','examConfigScreen','modeChooserScreen','profileSetupScreen','levelScreen','loadingScreen','examScreen','resultsScreen','mistakeReviewScreen','flashcardScreen','vocabExamScreen','historyScreen','savedExamsScreen'];
+const SCREENS=['homeScreen','goalWorkspaceScreen','examConfigScreen','modeChooserScreen','profileSetupScreen','levelScreen','loadingScreen','examScreen','resultsScreen','mistakeReviewScreen','flashcardScreen','vocabExamScreen','historyScreen'];
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 function hideAll(){flushOpenStudySession();SCREENS.forEach(hide);stopTimer();showExamConfigFootbar(false);showModeChooserFootbar(false);}
@@ -3127,11 +3119,6 @@ function goFlashcards(clearGoalFilter){
 function goHistory(){
   const goal=getActiveGoal()||S.goals[0];
   if(goal){openGoalWorkspace(goal.id,'progress');return;}
-  goHome();
-}
-function goSavedExams(){
-  const goal=getActiveGoal()||S.goals[0];
-  if(goal){openGoalWorkspace(goal.id,'exams');return;}
   goHome();
 }
 function backFromLevelScreen(){
@@ -4744,19 +4731,6 @@ function saveCurrentExam(statusOverride){
     setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
   });
 }
-function renderSavedExams(){
-  const grid=document.getElementById('savedGrid');
-  if(!S.savedExams.length){grid.innerHTML='<div class="hist-empty" style="grid-column:1/-1"><span>📁</span>No saved exams yet.<br>Generate an exam and click <b>Save Exam</b>.</div>';return;}
-  grid.innerHTML=S.savedExams.map((e,i)=>{
-    const src=e.source||(e.data?.demo?'demo':e.data?.poolSource?'pool':'ai');
-    const srcLbl=src==='demo'?'Demo':(src==='pool'||src==='library')?'From library':'AI Generated';
-    const st=e.status||'in_progress';
-    const stLbl=st==='completed'?'Completed':st==='aborted'?'Aborted':'In progress';
-    const modeLbl=normalizeMode(e.mode)==='practice'?'Practice':'Official';
-    const scoreH=e.score!=null?`<div class="saved-card-score ${e.score>=70?'pass':e.score>=50?'mid':'fail'}">${e.score}%</div>`:'';
-    return `<div class="saved-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div class="saved-card-title">${examFlag(e.lang)} ${esc(e.topic)}</div><span class="saved-src-badge">${srcLbl}</span></div><div class="saved-card-meta">${e.level} · ${modeLbl} · Saved ${e.savedAt}</div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap"><span class="saved-status ${st}">${stLbl}</span>${scoreH}</div><div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;gap:6px;flex-wrap:wrap"><button class="btn-sm" onclick="reviewSavedExam(${i})" style="font-size:11px">Review</button><button class="btn-sm blue" onclick="retakeExam(${i})" style="font-size:11px">↺ Retake</button><button class="btn-sm red" onclick="deleteSaved(${i})" style="font-size:11px">✕</button></div></div>`;
-  }).join('');
-}
 function reviewSavedExam(i){
   const e=S.savedExams[i];
   if(!e||!e.data){lcToast('Exam data missing.','warn');return;}
@@ -4812,7 +4786,7 @@ function retakeExam(i,resume){
   }
   renderExam();
 }
-function deleteSaved(i){if(confirm('Remove this saved exam?')){S.savedExams.splice(i,1);saveSaved();renderSavedExams();const goal=getActiveGoal();if(goal&&document.getElementById('wsSavedGrid'))renderWsSavedExams(goal);}}
+function deleteSaved(i){if(confirm('Remove this saved exam?')){S.savedExams.splice(i,1);saveSaved();const goal=getActiveGoal();if(goal&&document.getElementById('wsSavedGrid'))renderWsSavedExams(goal);}}
 
 // ═══════════════════════════════════════════
 // HISTORY
