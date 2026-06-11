@@ -2,6 +2,10 @@
  * Exam goals — single source of truth (lc_goals + lc_active_goal).
  * Legacy lc_goal is read-only for one-time migration; writes go through applyContext().
  */
+function isDue(fc) {
+  return fc.nextReview && Date.now() >= fc.nextReview;
+}
+
 const GoalStore = (() => {
   const GOALS_KEY = 'lc_goals';
   const ACTIVE_KEY = 'lc_active_goal';
@@ -234,9 +238,6 @@ function prepGoalContext(goal) {
 function ensureGoalSlugs() {
   GoalStore.ensureSlugs();
 }
-function goalSlug(goal) {
-  return GoalStore.slug(goal);
-}
 function findGoalBySlug(slug) {
   return GoalStore.findBySlug(slug);
 }
@@ -272,6 +273,29 @@ function daysUntilExam(examDate) {
   today.setHours(0, 0, 0, 0);
   const exam = new Date(examDate + 'T00:00:00');
   return Math.ceil((exam - today) / 86400000);
+}
+
+function findOrCreateGoal(subject, level) {
+  ensureGoalSlugs();
+  const lvl = String(level || '').toUpperCase();
+  let goal = S.goals.find((g) => g.subject === subject && g.level === lvl);
+  if (goal) {
+    GoalStore.setActive(goal.id);
+    return goal;
+  }
+  goal = {
+    id: 'goal_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
+    subject,
+    level: lvl,
+    examDate: null,
+    createdAt: Date.now(),
+  };
+  S.goals.push(goal);
+  GoalStore.applyContext(goal);
+  ensureGoalSlugs();
+  if (typeof syncDashboardGoalOrder === 'function') syncDashboardGoalOrder();
+  saveGoals();
+  return goal;
 }
 
 function createGoal({ subject, level, examDate }) {

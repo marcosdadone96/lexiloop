@@ -49,11 +49,13 @@ async function runInit(){
   const authMode=lp.get('auth');
   if(authMode==='login'||authMode==='register'){
     history.replaceState({},'',location.pathname);
-    switchTab(authMode);
-    showAuthOverlay();
-    show('homeScreen');
-    renderHomeScreen();
-    return;
+    if(!isAppAuthenticated()){
+      switchTab(authMode);
+      showAuthOverlay();
+      show('homeScreen');
+      renderHomeScreen();
+      return;
+    }
   }
   if(authMode==='google'){
     history.replaceState({},'',location.pathname);
@@ -81,16 +83,20 @@ async function runInit(){
       renderHomeScreen();
       return;
     }
+    history.replaceState({},'',location.pathname);
+    hideAuthOverlay();
     if(deepLevel&&['A1','A2','B1','B2','C1','C2'].includes(deepLevel.toUpperCase())){
-      history.replaceState({},'',location.pathname);
-      await selectSubject(deepLang);
-      pickLevel(deepLevel.toUpperCase());
-      hideAuthOverlay();
+      const goal=findOrCreateGoal(deepLang,deepLevel.toUpperCase());
+      if(goal)openGoalWorkspace(goal.id,'exams',true);
       return;
     }
-    history.replaceState({},'',location.pathname);
-    await selectSubject(deepLang);
-    hideAuthOverlay();
+    const existing=S.goals.find(g=>g.subject===deepLang);
+    if(existing)openGoalWorkspace(existing.id,'exams',true);
+    else{
+      _goalWizard.subject=deepLang;
+      _goalWizard.level='B1';
+      showAddGoalWizard();
+    }
     return;
   }
   if(!isAppAuthenticated()){

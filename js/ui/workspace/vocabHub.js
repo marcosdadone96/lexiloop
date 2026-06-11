@@ -8,18 +8,6 @@ function clearVocabHubFlashcardMode(){
     _vocabHub.veFromVocab=false;
   }
 }
-function exitVocabHubFlashcards(){
-  _vocabHub.activity=null;
-  _vocabHub.flashcardMode=false;
-  refreshVocabHubPanel();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function backFromVocabQuiz(){
-  _vocabHub.veFromVocab=false;
-  const id=S.activeGoalId;
-  if(id)openGoalWorkspace(id,'vocabulary');
-  else goHome();
-}
 function setVocabHubFcLang(code,btn){
   S.fcLang=code;
   document.querySelectorAll('#vvFcLangBtns .vt-lb').forEach(b=>b.classList.remove('active'));
@@ -42,23 +30,6 @@ function readinessEstLabelHtml(pct,hasData){
   if(!hasData)return 'est. <b>—</b>';
   const qual=readinessQualLabel(pct);
   return 'est. <b>'+pct+'% ready</b> · '+qual;
-}
-function formatGoalDateLine(goal){
-  if(goal.examDate){
-    const days=daysUntilExam(goal.examDate);
-    if(days!==null){
-      const d=Math.max(0,days);
-      if(d===0)return '◷ Exam is today';
-      return '◷ Exam in '+d+' day'+(d===1?'':'s');
-    }
-  }
-  return '◷ No exam date set';
-}
-function goalCardActionLabel(act){
-  if(/exam|mock|practice|weakness|personalized/i.test((act.title||'')+(act.cta||''))){
-    return{title:'Start a practice exam',sub:'Your best next step today'};
-  }
-  return{title:act.title,sub:act.desc};
 }
 function readinessRingColor(pct){
   if(pct>=70)return'var(--green)';
@@ -108,11 +79,6 @@ function vocabHubStruggling(deck){
 }
 function vocabHubStrugglingCount(goal){
   return vocabHubStruggling(deckForGoal(goal)).length;
-}
-function vocabHubWordStatus(fc){
-  if((fc.missCount||0)>=2)return'struggling';
-  if(isDue(fc))return'due';
-  return'learning';
 }
 function vocabHubFilteredDeck(goal){
   const deck=deckForGoal(goal);
@@ -198,11 +164,6 @@ function vocabHubGroupDeck(goal){
   });
   return groups;
 }
-function toggleVocabHubSection(type){
-  if(_vocabHub.collapsed.has(type))_vocabHub.collapsed.delete(type);
-  else _vocabHub.collapsed.add(type);
-  refreshVocabHubPanel();
-}
 function expandVocabHubSection(type){
   _vocabHub.expanded.add(type);
   refreshVocabHubPanel();
@@ -211,12 +172,6 @@ function vocabHubSelectAllInSection(type){
   const goal=S.goals.find(g=>g.id===_vocabHub.goalId);
   if(!goal)return;
   vocabHubGroupDeck(goal)[type].forEach(f=>_vocabHub.selectedIds.add(fcId(f)));
-  refreshVocabHubPanel();
-}
-function vocabHubDeselectAllInSection(type){
-  const goal=S.goals.find(g=>g.id===_vocabHub.goalId);
-  if(!goal)return;
-  vocabHubGroupDeck(goal)[type].forEach(f=>_vocabHub.selectedIds.delete(fcId(f)));
   refreshVocabHubPanel();
 }
 function vocabHubDisplayWord(fc,subject){
@@ -264,26 +219,26 @@ function vocabHubSelNoteHtml(selN,deckLen){
   return'<p class="vv-selnote" id="vocabHubSummary"><b>'+selN+' selected</b>'+extra+'</p>';
 }
 function vocabHubManualAddHtml(){
-  return'<div class="vv-add"><p class="vv-add-lbl">Add a word manually</p><div class="vv-add-row">'+
+  return'<p class="vv-add-lbl">Add a word manually</p><div class="vv-add-row">'+
     '<input class="fc-add-input" id="vvAddWord" placeholder="Word in exam language…" onkeydown="if(event.key===\'Enter\')submitManualVocab(\'hub\')" oninput="clearManualAddHint(\'hub\')">'+
     '<input class="fc-add-input" id="vvAddTrans" placeholder="Translation (if not in library)…" onkeydown="if(event.key===\'Enter\')submitManualVocab(\'hub\')">'+
     '<button type="button" class="btn-sm accent" onclick="submitManualVocab(\'hub\')" style="padding:10px 16px">+ Add</button></div>'+
     '<div id="vvAddHint" class="vv-add-hint" style="display:none"></div>'+
-    '<p class="note" style="margin:10px 0 0;font-size:11px">Words are sorted into Nouns, Verbs, Adjectives, etc. Spelling is checked against the word list when available.</p></div>';
+    '<p class="note" style="margin:10px 0 0;font-size:11px">Words are sorted into Nouns, Verbs, Adjectives, etc. Spelling is checked against the word list when available.</p>';
 }
 function vocabHubActionsHtml(selN){
   const canCustom=selN>=VV_MIN_CUSTOM;
   const canFlash=selN>=VV_MIN_FLASH;
   const canDrill=selN>=VV_MIN_DRILL;
-  return'<h2 class="vv-act-title">Pick an action — applies to selected words</h2>'+
-    '<div class="vv-actions">'+
-      '<button type="button" class="vv-act vv-act--hero"'+(canCustom?' onclick="launchVocabHubCustomExam()"':' disabled')+'><span class="vv-act-icon" aria-hidden="true">✦</span><span class="vv-act-name">Custom exam</span><span class="vv-act-desc">From your words</span></button>'+
-      '<button type="button" class="vv-act"'+(canFlash?' onclick="launchVocabHubFlashcards()"':' disabled')+'><span class="vv-act-icon" aria-hidden="true">▭</span><span class="vv-act-name">Flashcards</span><span class="vv-act-desc">Spaced review</span></button>'+
-      '<button type="button" class="vv-act"'+(canDrill?' onclick="launchVocabHubQuickDrill()"':' disabled')+'><span class="vv-act-icon" aria-hidden="true">⚡</span><span class="vv-act-name">Quick drill</span><span class="vv-act-desc">Fast quiz</span></button>'+
+  return'<p class="ws-seclbl">Pick an action — applies to selected words</p>'+
+    '<div class="ws-exam-grid ws-exam-grid--vocab">'+
+      '<button type="button" class="ws-exam-card ws-exam-card--personal"'+(canCustom?' onclick="launchVocabHubCustomExam()"':' disabled')+'><span class="ws-exam-card-ic">✦</span><span class="ws-exam-card-title">Custom exam</span><span class="ws-exam-card-desc">From your words</span></button>'+
+      '<button type="button" class="ws-exam-card ws-exam-card--practice"'+(canFlash?' onclick="launchVocabHubFlashcards()"':' disabled')+'><span class="ws-exam-card-ic">▭</span><span class="ws-exam-card-title">Flashcards</span><span class="ws-exam-card-desc">Spaced review</span></button>'+
+      '<button type="button" class="ws-exam-card ws-exam-card--oral"'+(canDrill?' onclick="launchVocabHubQuickDrill()"':' disabled')+'><span class="ws-exam-card-ic">⚡</span><span class="ws-exam-card-title">Quick drill</span><span class="ws-exam-card-desc">Fast quiz</span></button>'+
     '</div>'+
-    '<div class="vv-actions vv-actions--soon">'+
-      '<div class="vv-act vv-act--soon" aria-disabled="true"><span class="vv-act-name">Games <span class="vv-soon-badge">Soon</span></span></div>'+
-      '<div class="vv-act vv-act--soon" aria-disabled="true"><span class="vv-act-name">Phrases <span class="vv-soon-badge">Soon</span></span></div>'+
+    '<div class="ws-exam-grid ws-exam-grid--soon">'+
+      '<div class="ws-exam-card ws-act-card soon" aria-disabled="true"><span class="ws-exam-card-title">Games <span class="vv-soon-badge">Soon</span></span><span class="ws-exam-card-desc">Match &amp; more</span></div>'+
+      '<div class="ws-exam-card ws-act-card soon" aria-disabled="true"><span class="ws-exam-card-title">Phrases <span class="vv-soon-badge">Soon</span></span><span class="ws-exam-card-desc">Sentence practice</span></div>'+
     '</div>';
 }
 function refreshVocabHubPanel(){
@@ -292,6 +247,7 @@ function refreshVocabHubPanel(){
   if(!goal||!el)return;
   el.innerHTML=renderWsVocabularyHtml(goal);
   if(_vocabHub.activity==='flashcards')renderFcSingleView();
+  if(typeof syncNavBackLabels==='function')syncNavBackLabels();
 }
 function setVocabHubFilter(filter){
   _vocabHub.filter=filter;
@@ -346,11 +302,10 @@ function launchVocabHubQuickDrill(){
   if(S.mode==='practice')S.vocabLang=vocabLangFor(goal.subject);
   startVE(false);
 }
-function launchVocabHubMicroPractice(){launchVocabHubQuickDrill();}
 function renderVocabHubFlashcardsHtml(goal){
   const n=vocabHubSelectedIds(goal).length;
   const langBtns=LANGS.map(l=>'<button type="button" class="vt-lb'+(S.fcLang===l.code?' active':'')+'" onclick="setVocabHubFcLang(\''+l.code+'\',this)">'+l.l+'</button>').join('');
-  return'<div class="vv-panel vv-panel--fc"><button type="button" class="back-btn" onclick="exitVocabHubFlashcards()">← Word list</button><p class="vv-head">Flashcards · '+n+' word'+(n===1?'':'s')+'</p><p style="font-size:12px;font-weight:600;color:var(--text2);margin:0 0 14px">Tap the card to see the translation in your chosen language.</p><div class="fc-lang-bar" style="margin-bottom:8px"><span class="fc-lang-label">Translation:</span><div class="fc-lang-btns" id="vvFcLangBtns">'+langBtns+'</div></div><div id="vvFcSingle"></div></div>';
+  return'<div class="vv-panel vv-panel--fc">'+renderNavBackBtn('Vocabulary')+'<h1 class="exam-config-h1">Flashcards</h1><p class="exam-config-lede">'+n+' word'+(n===1?'':'s')+' selected · tap the card to reveal the translation.</p><div class="ws-panel vv-fc-panel"><div class="fc-lang-bar vv-fc-lang"><span class="fc-lang-label">Translation:</span><div class="fc-lang-btns" id="vvFcLangBtns">'+langBtns+'</div></div><div id="vvFcSingle"></div></div></div>';
 }
 function renderWsVocabularyHtml(goal){
   if(_vocabHub.activity==='flashcards')return renderVocabHubFlashcardsHtml(goal);
@@ -364,12 +319,19 @@ function renderWsVocabularyHtml(goal){
   const selN=vocabHubSelectedIds(goal).length;
   const filterChip=(key,lbl,n)=>'<button type="button" class="vv-filter'+(filt===key?' on':'')+'" onclick="setVocabHubFilter(\''+key+'\')">'+lbl+' · '+n+'</button>';
   const filters=filterChip('all','All',deck.length)+filterChip('due','To review',dueN)+filterChip('new','New',newN)+filterChip('mastered','Mastered',mastN)+filterChip('difficult','Difficult',diffN)+filterChip('struggling','Struggling',strugN);
-  const actionsHtml=deck.length?vocabHubLegendHtml(goal)+vocabHubActionsHtml(selN)+vocabHubSelNoteHtml(selN,deck.length):'';
+  const actionsBlock=deck.length?vocabHubActionsHtml(selN)+vocabHubSelNoteHtml(selN,deck.length):'';
+  const brk=vocabOverviewBreakdown(goal);
+  const header='<h1 class="exam-config-h1">Your vocabulary</h1><p class="exam-config-lede"><b>'+esc(goalLabel(goal))+'</b> · '+brk.total+' word'+(brk.total===1?'':'s')+' saved'+(brk.due>0?' · <b>'+brk.due+' due today</b>':'')+'.</p>';
   let bodyHtml='';
   if(!deck.length){
     bodyHtml='<p style="font-size:13px;color:var(--text3);margin:0">No words saved yet — add one above or save words during practice exams.</p>';
   }else{
     bodyHtml=vocabHubAccordionHtml(goal);
   }
-  return'<div class="vv-panel">'+renderWsVocabKpisHtml(goal)+renderWsVocabCategoriesHtml(goal)+'<p class="ws-seclbl">Smart lists</p><div class="vv-filters">'+filters+'</div>'+vocabHubManualAddHtml()+actionsHtml+bodyHtml+'</div>';
+  return'<div class="vv-panel">'+header+renderWsVocabKpisHtml(goal)+renderWsVocabCategoriesHtml(goal)+
+    '<div class="ws-panel vv-smart-panel"><p class="ws-seclbl">Smart lists</p><div class="vv-filters">'+filters+'</div></div>'+
+    '<div class="ws-panel vv-add-panel">'+vocabHubManualAddHtml()+'</div>'+
+    (deck.length?'<div class="ws-panel vv-actions-panel">'+actionsBlock+'</div>':'')+
+    '<div class="ws-panel vv-list-panel">'+(deck.length?vocabHubLegendHtml(goal):'')+bodyHtml+'</div>'+
+    '</div>';
 }

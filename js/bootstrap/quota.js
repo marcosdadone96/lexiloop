@@ -14,6 +14,27 @@ function incQuota(){
 function isPro(){return typeof S!=='undefined'&&S.plan==='pro';}
 function getQuotaMax(){return isPro()?PRO_QUOTA:FREE_QUOTA;}
 function canGenerate(){return getQuotaUsed()<getQuotaMax();}
+function getQuotaRemaining(){return getQuotaMax()-getQuotaUsed();}
+let _quotaConfirmCallback=null;
+function confirmQuotaUse(onConfirm){
+  if(getQuotaRemaining()!==1){onConfirm();return;}
+  const used=getQuotaUsed(),max=getQuotaMax();
+  const msg=document.getElementById('quotaConfirmMsg');
+  if(msg){
+    msg.innerHTML=`This is your <b>last exam</b> this month (${used}/${max} used). Use it now?`;
+  }
+  _quotaConfirmCallback=onConfirm;
+  document.getElementById('quotaConfirmModal')?.classList.add('show');
+}
+function closeQuotaConfirm(){
+  document.getElementById('quotaConfirmModal')?.classList.remove('show');
+  _quotaConfirmCallback=null;
+}
+function acceptQuotaConfirm(){
+  const cb=_quotaConfirmCallback;
+  closeQuotaConfirm();
+  if(cb)cb();
+}
 function updQuotaUI(){
   const used=getQuotaUsed(),max=getQuotaMax(),rem=max-used;
   const el=document.getElementById('quotaCount');
@@ -25,19 +46,6 @@ function updQuotaUI(){
   }
   if(badge) badge.innerHTML=isPro()?'<span class="plan-badge plan-pro">✦ Pro</span>':'<span class="plan-badge plan-free">Free</span>';
   if(upgradeBtn) upgradeBtn.style.display=isPro()?'none':'inline-flex';
-  // quota warning on level screen
-  const warn=document.getElementById('quotaWarning');
-  const btn=document.getElementById('btnStart');
-  if(warn&&btn){
-    if(!canGenerate()){
-      warn.style.display='block';
-      warn.textContent=`You've used all ${max} exams this month (pool or AI). Retake a saved exam for free, or upgrade to Pro for 20/month.`;
-      btn.disabled=true;
-    }else{
-      warn.style.display='none';
-      if(S.level) btn.disabled=false;
-    }
-  }
 }
 function showUpgrade(){document.getElementById('upgradeModal').classList.add('show');}
 function closeUpgrade(){document.getElementById('upgradeModal').classList.remove('show');}

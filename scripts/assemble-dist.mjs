@@ -24,7 +24,6 @@ function copyDesignSystem() {
   }
 }
 const COPY_FILES = [
-  'oral.html',
   'confirmacion.html',
   'privacy.html',
   'terms.html',
@@ -118,11 +117,6 @@ function writeSitemap() {
     <loc>https://www.lexicoil.com/demo.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://www.lexicoil.com/oral.html</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
 ${examUrls}
   <url>

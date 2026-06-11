@@ -52,11 +52,6 @@ export function Footer() {
                   Pricing
                 </a>
               </li>
-              <li>
-                <a href="/oral.html" className="hover:text-[var(--bg-base)]">
-                  Oral exam mode
-                </a>
-              </li>
             </ul>
           </div>
 

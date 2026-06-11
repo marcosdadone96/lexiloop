@@ -1,12 +1,6 @@
 // ═══════════════════════════════════════════
 // EXAM GENERATION
 // ═══════════════════════════════════════════
-function handleGenerateExam(){
-  if(!canGenerate()){showUpgrade();return;}
-  if(isOfficialMode())abortOfficialInProgress();
-  initExamSession(S.mode);
-  generateExam();
-}
 function normalizeCambridgeExam(d){
   if(!d||(!d.readingParts&&!d.listeningParts))return d;
   d.cambridgeFormat=true;
@@ -231,8 +225,7 @@ function isExamRenderable(d){
   return false;
 }
 function showExamError(e){
-  hideAll();
-  show('levelScreen');
+  backToWorkspace('exams');
   if(e.code==='quota_exceeded'){showQuotaExceededModal(e);return;}
   if(e.code==='timeout'||e.code==='gateway_timeout'){
     lcToast('Exam generation timed out. Please try again in 30 seconds.','warn',5000);
@@ -487,6 +480,9 @@ async function generateWeaknessExam(goalId){
   if(typeof QuestionLibrary==='undefined'||!QuestionLibrary.hasLibrary(goal.subject,goal.level)){
     lcToast('Weakness exams require a question library for this level.','warn');return;
   }
+  confirmQuotaUse(()=>runWeaknessExam(goal));
+}
+async function runWeaknessExam(goal){
   S.activeGoalId=goal.id;
   syncGoalToProfile(goal);
   saveGoals();

@@ -79,7 +79,7 @@ async function doLogin(){
     Auth.clearGuest();
     updUserBtn();
     setAMsg('Welcome back!',true);
-    setTimeout(()=>{closeAuth();if(typeof ExamProfile!=='undefined'&&ExamProfile.needsOnboarding())showProfileSetup();},600);
+    setTimeout(()=>{closeAuth();},600);
   }catch(e){setAMsg(e.message);}
   finally{setAuthLoading(false,'btnLogin','Iniciando sesión…','Sign In →');}
 }
@@ -137,7 +137,6 @@ async function doGoogle(){
     if(btn){btn.disabled=false;btn.style.opacity='';}
   }
 }
-function doGuest(){location.href='/demo';}
 function marketingUrl(){return(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'/':'https://lexicoil.com';}
 function showAuthOverlay(){
   const ov=document.getElementById('authOverlay');
@@ -153,10 +152,19 @@ function hideAuthOverlay(){
   ov.style.display='none';
   ov.setAttribute('aria-hidden','true');
 }
+function restoreAppShellAfterAuth(){
+  hideAuthOverlay();
+  updUserBtn();
+  updQuotaUI();
+  if(typeof ExamProfile!=='undefined'&&ExamProfile.needsOnboarding()){
+    showProfileSetup();
+    return;
+  }
+  if(typeof goHome==='function')goHome();
+}
 function closeAuth(){
   if(!isAppAuthenticated())return;
-  hideAuthOverlay();
-  updUserBtn();updQuotaUI();
+  restoreAppShellAfterAuth();
 }
 function updUserBtn(){
   if(!S.user)return;

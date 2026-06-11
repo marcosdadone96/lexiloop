@@ -38,13 +38,13 @@ function reviewSavedExam(i){
     return;
   }
   hideAll();
+  show('resultsScreen');
   const scr=document.getElementById('resultsScreen');
-  scr.style.display='block';
   const stLbl=e.status==='aborted'?'Exam aborted':e.status==='completed'?'Completed exam':'In progress';
   const isDE=e.lang==='de';
   const ansN=Object.keys(e.answers||{}).length+Object.keys(e.gapAnswers||{}).filter(k=>e.gapAnswers[k]?.trim()).length;
   const markedN=(e.markedWords||[]).length;
-  scr.innerHTML=`<button class="back-btn" onclick="backToWorkspace('exams')">← Workspace</button>
+  scr.innerHTML=`${renderNavBackBtn('Exams')}
     <div class="results-hero"><div class="res-score mid">—</div><div class="res-label">${stLbl} — ${esc(e.level)} ${examFlag(e.lang)} ${esc(e.topic)}</div></div>
     <div class="results-detail"><p style="font-size:13px;font-weight:600;color:var(--text2)">${e.status==='aborted'?'This official exam was ended when you started a new one. It was not submitted.':e.status==='in_progress'?'This practice exam was saved before completion. Resume to continue or retake from scratch.':'Saved exam snapshot.'} ${ansN} answer${ansN===1?'':'s'} recorded${markedN?`, ${markedN} word${markedN===1?'':'s'} marked`:''}.</p></div>
     <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:22px">

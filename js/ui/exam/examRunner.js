@@ -141,7 +141,7 @@ function renderGoetheSprechenPart(part,ui){
     h+=`<div class="off-photos">${part.photoDescriptions.map(p=>`<div class="off-ad">${esc(p)}</div>`).join('')}</div>`;
   }
   if(pts.length)h+=`<div class="speak-points">${pts.map(p=>`<div class="speak-point">${esc(p)}</div>`).join('')}</div>`;
-  h+=`<div style="font-size:12px;color:var(--text3);margin-bottom:7px">${ui.speakFmt}</div><textarea class="write-field" id="${part.fieldId}" style="min-height:160px" placeholder="${ui.me}" oninput="updProg()"></textarea></section><hr class="section-div">`;
+  h+=`<div style="font-size:12px;color:var(--text3);margin-bottom:7px">${ui.speakFmt}</div>${typeof renderSpeakingMicHtml==='function'?renderSpeakingMicHtml(part.fieldId,S.subject):`<textarea class="write-field" id="${part.fieldId}" style="min-height:160px" placeholder="${ui.me}" oninput="updProg()"></textarea>`}</section><hr class="section-div">`;
   return h;
 }
 function renderGoetheExam(d,isPrac,isQ){
@@ -243,7 +243,7 @@ function renderExam(){
   if(d.goetheFormat&&(!isQ)){
     secs=renderGoetheExam(d,isPrac,isQ);
     if(!secs.trim()&&!isExamRenderable(d)){
-      hideAll();show('levelScreen');
+      backToWorkspace('exams');
       lcToast('This exam has no content. Please generate again.','error');
       return;
     }
@@ -271,7 +271,9 @@ function renderExam(){
   if(d.sprechen&&!isQ){
     const lang=isDE?'de-DE':'en-GB';
     const teil=d.sprechen.teil||(isDE?'Sprechen':'Speaking');
-    secs+=`<section class="module-wrap"><div class="module-tag tag-sprechen">${teil}</div><h2 class="module-title">${isDE?'Sprechen':'Speaking'}</h2><p class="module-desc">${d.sprechen.situation}</p><div class="speak-points">${(d.sprechen.points||[]).map(p=>`<div class="speak-point">${p}</div>`).join('')}</div><div class="starter-msg"><div class="starter-av">${isDE?'P':'E'}</div><div><div class="starter-who">${d.sprechen.roleB}</div><div class="starter-line">${d.sprechen.starterLine}</div></div></div><button class="btn-sm blue" onclick="speak(${JSON.stringify(d.sprechen.starterLine)},'${lang}')" style="margin-bottom:10px">${isDE?'Anfangssatz anhoeren':'Hear starter line'}</button><div style="font-size:12px;color:var(--text3);margin-bottom:7px">${isDE?`Ihre Antwort (mind. ${d.sprechen.minExchanges} Wechsel, Format <b>Ich:</b>):`:`Your response (min ${d.sprechen.minExchanges} exchanges, format <b>Me:</b>):`}</div><textarea class="write-field" id="speakAns" style="min-height:180px" placeholder="${isDE?'Ich:':'Me:'}" oninput="updProg()"></textarea></section>`;
+    const speakFmt=isDE?`Ihre Antwort (mind. ${d.sprechen.minExchanges} Wechsel, Format <b>Ich:</b>):`:`Your response (min ${d.sprechen.minExchanges} exchanges, format <b>Me:</b>):`;
+    const micHtml=typeof renderSpeakingMicHtml==='function'?renderSpeakingMicHtml('speakAns',S.subject):`<textarea class="write-field" id="speakAns" style="min-height:180px" placeholder="${isDE?'Ich:':'Me:'}" oninput="updProg()"></textarea>`;
+    secs+=`<section class="module-wrap"><div class="module-tag tag-sprechen">${teil}</div><h2 class="module-title">${isDE?'Sprechen':'Speaking'}</h2><p class="module-desc">${d.sprechen.situation}</p><div class="speak-points">${(d.sprechen.points||[]).map(p=>`<div class="speak-point">${p}</div>`).join('')}</div><div class="starter-msg"><div class="starter-av">${isDE?'P':'E'}</div><div><div class="starter-who">${d.sprechen.roleB}</div><div class="starter-line">${d.sprechen.starterLine}</div></div></div><button class="btn-sm blue" onclick="speak(${JSON.stringify(d.sprechen.starterLine)},'${lang}')" style="margin-bottom:10px">${isDE?'Anfangssatz anhoeren':'Hear starter line'}</button><div style="font-size:12px;color:var(--text3);margin-bottom:7px">${speakFmt}</div>${micHtml}</section>`;
   }
   const isDemo=!!d.demo||!!S.isDemo;
   const isPool=!!(d.poolSource||S.examSource==='pool'||S.examSource==='library');
@@ -286,6 +288,7 @@ function renderExam(){
   if(S._resumeFieldValues){restoreExamFieldValues(S._resumeFieldValues);S._resumeFieldValues=null;}
   restoreExamAnswers();
   updProg();
+  if(typeof initSpeakingMicsForExam==='function')initSpeakingMicsForExam(d,S.subject);
   if(d.goetheFormat)updWGoethe();
   if(isOffMode&&!isQ){const ld=LEVELS[S.subject||'de'].find(l=>l.code===S.level)||{time:90};startTimer(ld.time);}
   const sy=S._resumeScrollY;

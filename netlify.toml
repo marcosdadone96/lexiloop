@@ -43,11 +43,6 @@
   status = 302
 
 [[redirects]]
-  from = "/oral"
-  to = "/oral.html"
-  status = 200
-
-[[redirects]]
   from = "/confirmacion"
   to = "/confirmacion.html"
   status = 200

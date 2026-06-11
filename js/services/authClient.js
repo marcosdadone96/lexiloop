@@ -6,6 +6,7 @@ const Auth = (() => {
   let localMode = false;
   let supabaseEnabled = false;
   let authConfig = null;
+  let authListenerBound = false;
 
   function isGuest() {
     return localStorage.getItem(GUEST_KEY) === '1';
@@ -182,15 +183,6 @@ const Auth = (() => {
     });
   }
 
-  function isSupabaseEmailConfirmed(user) {
-    if (!user) return false;
-    return Boolean(
-      user.email_confirmed_at ||
-        user.confirmed_at ||
-        user.identities?.some((id) => id.identity_data?.email_verified),
-    );
-  }
-
   function isOAuthCallbackUrl() {
     if (typeof window === 'undefined') return false;
     const q = new URLSearchParams(window.location.search);
@@ -201,6 +193,42 @@ const Auth = (() => {
     if (!supabaseEnabled || !authConfig) return false;
     await SupabaseAuth.init(authConfig);
     return SupabaseAuth.isReady();
+  }
+
+  function setupSupabaseAuthListener() {
+    if (authListenerBound || !supabaseEnabled || !SupabaseAuth.isReady()) return;
+    authListenerBound = true;
+    const sb = SupabaseAuth.getClient();
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setToken('');
+        clearGuest();
+        if (typeof S !== 'undefined') {
+          S.user = null;
+          S.plan = 'guest';
+        }
+        localStorage.removeItem('lc_user');
+        if (typeof updUserBtn === 'function') updUserBtn();
+        if (typeof refreshUserDropdown === 'function') refreshUserDropdown();
+        return;
+      }
+      if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && session?.access_token) {
+        try {
+          await exchangeSupabaseSession(session.access_token);
+          if (typeof updUserBtn === 'function') updUserBtn();
+          if (typeof refreshUserDropdown === 'function') refreshUserDropdown();
+          if (typeof restoreAppShellAfterAuth === 'function' && isAppAuthenticated()) {
+            const active = typeof getActiveScreenId === 'function' ? getActiveScreenId() : null;
+            const ov = document.getElementById('authOverlay');
+            const overlayOpen = Boolean(ov && ov.classList.contains('open'));
+            if (overlayOpen || !active) restoreAppShellAfterAuth();
+            else if (active === 'homeScreen' && typeof renderHomeScreen === 'function') renderHomeScreen();
+          }
+        } catch {
+          /* keep prior token if exchange fails */
+        }
+      }
+    });
   }
 
   async function waitForSupabaseSession(sb, maxMs = 10000) {
@@ -443,6 +471,7 @@ const Auth = (() => {
       if (res.ok) {
         applyUser(data.user);
         await pullSync();
+        if (supabaseEnabled && (await ensureSupabaseReady())) setupSupabaseAuthListener();
         return true;
       }
       if (res.status === 401) {
@@ -454,6 +483,7 @@ const Auth = (() => {
     }
 
     if (supabaseEnabled && (await ensureSupabaseReady())) {
+      setupSupabaseAuthListener();
       const { data } = await SupabaseAuth.getClient().auth.getSession();
       if (data?.session?.access_token) {
         try {

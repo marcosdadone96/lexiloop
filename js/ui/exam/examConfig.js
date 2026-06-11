@@ -1,4 +1,4 @@
-const _examConfig={goalId:null,selectedIds:new Set(),skills:new Set(['lesen','horen']),step:1};
+const _examConfig={goalId:null,selectedIds:new Set(),skills:new Set(['lesen','horen']),seedCount:0};
 function showExamConfigFootbar(visible){
   const fb=document.getElementById('examConfigFootbar');
   if(fb)fb.style.display=visible?'flex':'none';
@@ -11,11 +11,12 @@ function openExamConfigurator(goalId,preselectedIds){
   saveGoals();
   _examConfig.goalId=goalId;
   _examConfig.skills=new Set(['lesen','horen']);
-  _examConfig.step=1;
   _examConfig.selectedIds=new Set();
+  _examConfig.seedCount=0;
   const deck=deckForGoal(goal);
   if(preselectedIds&&preselectedIds.length){
     preselectedIds.forEach(id=>{if(deck.some(f=>fcId(f)===id))_examConfig.selectedIds.add(id);});
+    _examConfig.seedCount=_examConfig.selectedIds.size;
   }
   if(_examConfig.selectedIds.size<4){
     deck.forEach(f=>{if(isDue(f))_examConfig.selectedIds.add(fcId(f));});
@@ -27,25 +28,7 @@ function openExamConfigurator(goalId,preselectedIds){
   renderExamConfigurator();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-function backFromExamConfig(){
-  showExamConfigFootbar(false);
-  _examConfig.step=1;
-  if(_examConfig.goalId)openGoalWorkspace(_examConfig.goalId,'vocabulary');
-  else goHome();
-}
-function examConfigNavBack(){
-  if(_examConfig.step===2){_examConfig.step=1;renderExamConfigurator();return;}
-  backFromExamConfig();
-}
-function examConfigFootAction(){
-  if(_examConfig.step===1){
-    if(_examConfig.skills.size<1){lcToast('Select at least one exam part.','warn');return;}
-    _examConfig.step=2;
-    renderExamConfigurator();
-    return;
-  }
-  submitExamConfig();
-}
+function examConfigFootAction(){submitExamConfig();}
 function toggleConfigWord(id){
   if(_examConfig.selectedIds.has(id))_examConfig.selectedIds.delete(id);
   else _examConfig.selectedIds.add(id);
@@ -58,12 +41,16 @@ function selectAllDueConfig(){
   renderExamConfigurator();
 }
 function toggleConfigSkill(skill){
-  if(skill==='schreiben'||skill==='sprechen')return;
+  if(skill==='schreiben')return;
   if(_examConfig.skills.has(skill)){
     if(_examConfig.skills.size<=1)return;
     _examConfig.skills.delete(skill);
   }else _examConfig.skills.add(skill);
   renderExamConfigurator();
+}
+function configPartBadge(status){
+  if(status==='soon')return'<span class="exam-config-badge exam-config-badge--soon">Soon</span>';
+  return'<span class="exam-config-badge exam-config-badge--ready">Ready</span>';
 }
 function configSkillSummary(skills,subject){
   const ui=typeof examUiStrings==='function'?examUiStrings(subject==='de'?'de':subject==='es'?'es':'en'):{reading:'Reading',listening:'Listening',writing:'Writing',speaking:'Speaking'};
@@ -87,54 +74,54 @@ function renderExamConfigurator(){
   const deck=deckForGoal(goal);
   const dueN=dueForGoal(goal).length;
   const selN=_examConfig.selectedIds.size;
-  const step=_examConfig.step||1;
-  const backLbl=document.getElementById('examConfigBackBtn');
-  if(backLbl)backLbl.innerHTML=(step===2?'← Back':'← ')+esc(step===2?'Choose part':goalLabel(goal));
-  const stepsBar='<div class="exam-config-steps"><span class="exam-config-step'+(step===1?' on':'')+'">1 · Exam part</span><span class="exam-config-step'+(step===2?' on':'')+'">2 · Words</span></div>';
-  const partCard=(key,title,sub)=>{
-    const on=_examConfig.skills.has(key);
-    return'<div class="exam-config-part-card'+(on?' on':'')+'" onclick="toggleConfigSkill(\''+key+'\')"><span class="n">'+esc(title)+'<small>'+esc(sub)+'</small></span><span class="tk"></span></div>';
+  const seedHtml=_examConfig.seedCount>=4
+    ?`<div class="card note-card exam-config-seed"><b>Built from your ${_examConfig.seedCount} selected words</b> — tap to add or remove.</div>`
+    :`<div class="card note-card exam-config-seed"><b>Uses words from your deck</b> — we pre-selected due words where possible.</div>`;
+  const partCard=(key,title,sub,status)=>{
+    const isSoon=status==='soon';
+    const on=!isSoon&&_examConfig.skills.has(key);
+    const click=isSoon?'':' onclick="toggleConfigSkill(\''+key+'\')"';
+    return`<div class="exam-config-part-card${on?' on':''}${isSoon?' soon':''}"${click}><span class="n">${esc(title)}<small>${esc(sub)}</small></span><span class="exam-config-part-meta">${configPartBadge(status)}<span class="tk"></span></span></div>`;
   };
-  let body='';
-  if(step===1){
-    body=`
-    <h1 class="exam-config-h1">What do you want to build?</h1>
-    <p class="exam-config-lede">Choose one or more parts for your <b>${esc(goalLabel(goal))}</b> personalized exam.</p>
-    ${partCard('lesen',ui.reading,'Reading comprehension with your vocabulary')}
-    ${partCard('horen',ui.listening,'Listening tasks with your vocabulary')}
-    <p class="exam-config-hint">Grammar gap-fill and writing prompts are not available for personalized exams yet.</p>`;
-  }else{
-    const chips=deck.map(f=>{
-      const id=fcId(f);
-      const on=_examConfig.selectedIds.has(id);
-      const due=isDue(f);
-      return'<span class="exam-config-chip'+(on?' on':'')+'" onclick="toggleConfigWord(\''+esc(id)+'\')"><span class="tk">'+(on?'✓':'')+'</span>'+(due?'<span class="due-dot"></span>':'')+esc(f.word)+'</span>';
-    }).join('');
-    const chipsHtml=deck.length?'<div class="exam-config-chips">'+chips+'</div><p class="exam-config-hint">● amber dot = due for review today</p>':'<p class="exam-config-hint">No words in this deck yet. Save words during a practice exam first.</p>';
-    const skillLbl=configSkillSummary(_examConfig.skills,goal.subject);
-    body=`
-    <h1 class="exam-config-h1">Your word selection</h1>
-    <p class="exam-config-lede">Parts: <b>${esc(skillLbl)}</b>. Tap words to add or remove.</p>
+  const chips=deck.map(f=>{
+    const id=fcId(f);
+    const on=_examConfig.selectedIds.has(id);
+    const due=isDue(f);
+    const art=typeof fcGenderArticle==='function'?fcGenderArticle(f,goal.subject):null;
+    const word=typeof vocabHubDisplayWord==='function'?vocabHubDisplayWord(f,goal.subject):f.word;
+    const artHtml=art?'<span class="vv-art '+art.cls+'">'+esc(art.article)+'</span> ':'';
+    return'<span class="exam-config-chip'+(on?' on':'')+'" onclick="toggleConfigWord(\''+esc(id)+'\')"><span class="tk">'+(on?'✓':'')+'</span>'+(due?'<span class="due-dot"></span>':'')+artHtml+esc(word)+'</span>';
+  }).join('');
+  const chipsHtml=deck.length?'<div class="exam-config-chips">'+chips+'</div><p class="exam-config-hint">● amber dot = due for review today</p>':'<p class="exam-config-hint">No words in this deck yet. Save words during a practice exam first.</p>';
+  const skillLbl=configSkillSummary(_examConfig.skills,goal.subject);
+  const oralOnly=_examConfig.skills.size===1&&_examConfig.skills.has('sprechen');
+  el.innerHTML=`
+    <h1 class="exam-config-h1">Personalized exam</h1>
+    <p class="exam-config-lede">Build a custom <b>${esc(goalLabel(goal))}</b> exam from your vocabulary.</p>
+    ${seedHtml}
+    <p class="exam-config-seclbl">Exam parts</p>
+    ${partCard('lesen',ui.reading,'Reading comprehension with your vocabulary','ready')}
+    ${partCard('horen',ui.listening,'Listening tasks with your vocabulary','ready')}
+    ${partCard('sprechen',ui.speaking,'Speaking task with microphone + AI evaluation','ready')}
+    ${partCard('schreiben',ui.writing,'Writing prompts from your vocabulary','soon')}
     <p class="exam-config-seclbl"><span>Words to include · ${selN} selected</span>${dueN>0?'<button type="button" class="exam-config-cta" onclick="selectAllDueConfig()">Select all due ('+dueN+') →</button>':''}</p>
     <div class="exam-config-panel">${chipsHtml}</div>`;
-  }
-  el.innerHTML=stepsBar+body;
   const summary=document.getElementById('examConfigSummary');
   const genBtn=document.getElementById('examConfigGenerateBtn');
-  const skillLbl=configSkillSummary(_examConfig.skills,goal.subject);
   const qEst=estimateConfigQuestions(selN,_examConfig.skills.size);
+  const rem=typeof getQuotaRemaining==='function'?getQuotaRemaining():null;
   if(summary){
-    if(step===1)summary.innerHTML=esc(skillLbl)+' · pick at least one part';
-    else summary.innerHTML='<b>'+selN+' word'+(selN===1?'':'s')+'</b> · '+esc(skillLbl)+' · ~'+qEst+' questions';
+    let txt='<b>'+selN+' word'+(selN===1?'':'s')+'</b> · '+esc(skillLbl);
+    if(oralOnly)txt+=' · oral practice';
+    else txt+=' · ~'+qEst+' questions';
+    if(rem===1)txt+=' · <span class="exam-config-quota-warn">Last exam this month</span>';
+    summary.innerHTML=txt;
   }
   if(genBtn){
-    if(step===1){
-      genBtn.disabled=_examConfig.skills.size<1;
-      genBtn.textContent='Continue →';
-    }else{
-      genBtn.disabled=selN<4||_examConfig.skills.size<1||!canGenerate();
-      genBtn.textContent=canGenerate()?'Generate exam →':'Quota used — upgrade';
-    }
+    genBtn.disabled=selN<4||_examConfig.skills.size<1||!canGenerate();
+    if(!canGenerate())genBtn.textContent='Quota used — upgrade';
+    else if(oralOnly)genBtn.textContent='Start speaking →';
+    else genBtn.textContent='Generate exam →';
   }
 }
 function submitExamConfig(){
@@ -143,103 +130,13 @@ function submitExamConfig(){
   const words=deckForGoal(goal).filter(f=>_examConfig.selectedIds.has(fcId(f))).map(f=>f.word);
   const skills=[..._examConfig.skills];
   if(words.length<4){lcToast('Select at least 4 words.','warn');return;}
-  if(skills.length<1){lcToast('Select at least one skill.','warn');return;}
+  if(skills.length<1){lcToast('Select at least one exam part.','warn');return;}
   if(!canGenerate()){showUpgrade();return;}
   showExamConfigFootbar(false);
-  generatePersonalExam(words,skills,_examConfig.goalId);
-}
-const _modeChooser={goalId:null,mode:'official'};
-function showModeChooserFootbar(visible){
-  const fb=document.getElementById('modeChooserFootbar');
-  if(fb)fb.style.display=visible?'flex':'none';
-}
-function openModeChooser(goalId){
-  const goal=S.goals.find(g=>g.id===goalId);
-  if(!goal)return;
-  S.activeGoalId=goalId;
-  syncGoalToProfile(goal);
-  saveGoals();
-  _modeChooser.goalId=goalId;
-  _modeChooser.mode='official';
-  hideAll();
-  show('modeChooserScreen');
-  showModeChooserFootbar(true);
-  renderModeChooser();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function backFromModeChooser(){
-  showModeChooserFootbar(false);
-  if(_modeChooser.goalId)openGoalWorkspace(_modeChooser.goalId,'exams');
-  else goHome();
-}
-function selectModeChooser(mode){
-  _modeChooser.mode=mode;
-  renderModeChooser();
-}
-function renderModeChooser(){
-  const goal=S.goals.find(g=>g.id===_modeChooser.goalId);
-  const el=document.getElementById('modeChooserContent');
-  if(!goal||!el)return;
-  const isDE=goal.subject==='de';
-  const m=_modeChooser.mode;
-  const back=document.getElementById('modeChooserBackBtn');
-  if(back)back.innerHTML='← '+esc(goalLabel(goal));
-  const exWord=isDE?'Maßnahmen':'measures';
-  const exLine=isDE
-    ?`Die <span class="vocab-word vocab-marked">${exWord}</span> zur Nachhaltigkeit seien noch nicht ausreichend.`
-    :`The <span class="vocab-word vocab-marked">${exWord}</span> for sustainability are still not sufficient.`;
-  el.innerHTML=`
-    <h1 class="exam-config-h1" style="margin-bottom:14px">Take a practice exam — choose your mode</h1>
-    <div class="mode-ex-grid" style="margin-bottom:18px">
-      <div class="mode-opt${m==='official'?' sel':''}" onclick="selectModeChooser('official')">
-        <div class="mode-opt-top"><h3>Official mode</h3><span class="mode-opt-dot"></span></div>
-        <ul><li>Timer running, like an official sitting</li><li>No translations, no hints</li><li>Tap words to mark them — reviewed after</li></ul>
-      </div>
-      <div class="mode-opt${m==='practice'?' sel':''}" onclick="selectModeChooser('practice')">
-        <div class="mode-opt-top"><h3>Practice mode</h3><span class="mode-opt-dot"></span></div>
-        <ul><li>No timer, study at your pace</li><li>Tap a word for instant translation</li><li>Saves straight to your deck</li></ul>
-      </div>
-    </div>
-    <p class="exam-config-seclbl">Same question · how each mode behaves</p>
-    <div class="mode-ex-grid">
-      <div class="mode-ex off">
-        <div class="mode-ex-h"><span>OFFICIAL</span><span class="timer-val" style="font-size:12px">28:14</span></div>
-        <div class="mode-ex-b">
-          <p class="mode-ex-q">${exLine}</p>
-          <div class="mode-markmsg">"${exWord}" marked — reviewed &amp; saved on the results screen. No translation now.</div>
-        </div>
-      </div>
-      <div class="mode-ex prac">
-        <div class="mode-ex-h"><span>PRACTICE</span><span style="font-size:10px;color:var(--text3)">No timer</span></div>
-        <div class="mode-ex-b">
-          <p class="mode-ex-q">Die <span class="vocab-word vocab-saved">${exWord}</span> zur Nachhaltigkeit…</p>
-          <div class="mode-pop"><div class="mode-pop-w">${exWord}</div><div class="mode-pop-t">${isDE?'Maßnahmen, Schritte':'measures, steps'}</div><div class="mode-pop-s">✓ Saved to your deck</div></div>
-        </div>
-      </div>
-    </div>`;
-  const sum=document.getElementById('modeChooserSummary');
-  const hasOfficial=!!(S._officialInProgress?.examData);
-  if(sum){
-    sum.innerHTML=m==='official'&&hasOfficial
-      ?'Starting in <b>Official mode</b> · a timed exam in progress will be ended'
-      :`Starting in <b>${m==='official'?'Official':'Practice'} mode</b>`;
-  }
-}
-async function startExamFromModeChooser(){
-  const goal=S.goals.find(g=>g.id===_modeChooser.goalId);
-  if(!goal)return;
-  if(!canGenerate()){showUpgrade();return;}
-  const mode=_modeChooser.mode;
-  if(mode==='official')abortOfficialInProgress();
-  S.mode=mode;
-  S.subject=goal.subject;
-  S.level=goal.level;
-  syncGoalToProfile(goal);
-  if(mode==='practice')S.vocabLang=vocabLangFor(goal.subject);
-  selectMode(mode);
-  initExamSession(mode);
-  showModeChooserFootbar(false);
-  await generateExam();
+  const gid=_examConfig.goalId;
+  const oralOnly=skills.length===1&&skills[0]==='sprechen';
+  if(oralOnly)confirmQuotaUse(()=>startOralPractice(goal,words));
+  else confirmQuotaUse(()=>generatePersonalExam(words,skills,gid));
 }
 function openDeckHub(goalId,options){
   const goal=S.goals.find(g=>g.id===goalId);
@@ -259,14 +156,6 @@ function openDeckHub(goalId,options){
   show('flashcardScreen');
   renderDeckHub();
   window.scrollTo({top:0,behavior:'smooth'});
-}
-function backFromDeckHub(){
-  const id=S.activeGoalId;
-  clearVocabHubFlashcardMode();
-  S.fcSelected.clear();
-  S.deckGoalFilter=null;
-  if(id)openGoalWorkspace(id,'vocabulary');
-  else goHome();
 }
 function renderDeckHub(){
   const inHub=!!S.deckGoalFilter;
@@ -288,14 +177,12 @@ function renderDeckHub(){
   if(es)es.style.display=inHub?'none':(getDeckViewCards().length>0?'block':'none');
   if(ps)ps.style.display=inHub?'none':(getDeckViewCards().length>0?'block':'none');
   if(!inHub||!goal){renderFC(false);return;}
-  const lbl=document.getElementById('fcHubBackLbl');
-  if(lbl)lbl.textContent=goalLabel(goal);
   const title=document.getElementById('fcHubTitle');
-  if(title)title.textContent='Your difficult words — '+goalLabel(goal);
+  if(title)title.textContent='Flashcards';
   const deck=deckForGoal(goal);
   const due=dueForGoal(goal).length;
   const ctx=document.getElementById('fcHubCtx');
-  if(ctx)ctx.innerHTML=deck.length+' word'+(deck.length===1?'':'s')+' saved'+(due>0?' · <b>'+due+' due for review today</b>':'');
+  if(ctx)ctx.innerHTML='<b>'+esc(goalLabel(goal))+'</b> · '+deck.length+' word'+(deck.length===1?'':'s')+' saved'+(due>0?' · <b>'+due+' due for review today</b>':'');
   if(ways){
     const dueBadge=due>0?`<span class="badge-due">${due} due</span>`:'';
     ways.innerHTML=`

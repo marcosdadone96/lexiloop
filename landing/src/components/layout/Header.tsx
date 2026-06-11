@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import { Logo } from '@/components/ui/Logo';
 import { Container } from '@/components/ui/Container';
 import { useAuthUi } from '@/context/AuthUiContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { APP_URL } from '@/lib/constants';
 import { tryExamAsGuest } from '@/lib/tryExam';
 
 const NAV = [
@@ -19,7 +21,9 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { openAuth } = useAuthUi();
+  const { user, ready, isLoggedIn, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const userLabel = user?.name || user?.email?.split('@')[0] || 'Account';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -109,9 +113,20 @@ export function Header() {
             <button type="button" onClick={tryExamAsGuest} className="btn-primary w-full">
               Try demo
             </button>
-            <button type="button" onClick={() => openAuth('login')} className="btn-secondary w-full">
-              Log in
-            </button>
+            {ready && isLoggedIn ? (
+              <>
+                <a href={APP_URL} className="btn-secondary w-full text-center">
+                  Open app
+                </a>
+                <button type="button" onClick={() => logout()} className="btn-secondary w-full">
+                  Log out
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={() => openAuth('login')} className="btn-secondary w-full">
+                Log in
+              </button>
+            )}
           </div>
         </div>
       )}

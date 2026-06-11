@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════════
 // FLASHCARDS
 // ═══════════════════════════════════════════
-function isDue(fc){return fc.nextReview&&Date.now()>=fc.nextReview;}
 function getSRS(fc,q){const ef=fc.ef||2.5;let iv=fc.interval||1;if(q===0)iv=1;else if(q===1)iv=Math.max(1,Math.round(iv*.5));else if(q===2)iv=iv<=1?3:Math.round(iv*ef);else iv=Math.round(iv*ef*1.3);const nef=Math.max(1.3,ef+(0.1-(3-q)*(0.08+(3-q)*0.02)));return{interval:iv,ef:nef,nextReview:Date.now()+iv*24*60*60*1000};}
 function srsRate(i,q){const fc=S.flashcards[i];if(!fc)return;const r=getSRS(fc,q);fc.interval=r.interval;fc.ef=r.ef;fc.nextReview=r.nextReview;saveFC();}
 function fcEvidence(fc){
@@ -205,12 +204,13 @@ function renderFcSingleView(){
   if(S.fcSingleIdx>=cards.length)S.fcSingleIdx=Math.max(0,cards.length-1);
   if(!cards.length){
     if(inVocab){
-      sc.innerHTML='<div class="deck-empty-state"><div class="ic">📭</div><h3>No words selected</h3><p>Go back and pick at least '+VV_MIN_FLASH+' word.</p><button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="exitVocabHubFlashcards()">← Word list</button></div>';
+      sc.innerHTML='<div class="deck-empty-state"><div class="ic">📭</div><h3>No words selected</h3><p>Go back and pick at least '+VV_MIN_FLASH+' word.</p><button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="navBack()">← Vocabulary</button></div>';
       return;
     }
     const goal=getActiveGoal();
     const gid=goal?esc(goal.id):'';
-    sc.innerHTML='<div class="deck-empty-state"><div class="ic">'+(S.fcTab==='due'||S.fcTab==='study'?'✅':'📭')+'</div><h3>'+(S.fcTab==='due'||S.fcTab==='study'?'No cards due':'No words yet')+'</h3><p>'+(S.fcTab==='due'||S.fcTab==='study'?'Check back later or review all words.':'Take a practice exam and save words you miss.')+'</p>'+(gid&&S.fcTab!=='due'?'<button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="openModeChooser(\''+gid+'\')">Take a practice exam</button>':'')+'</div>';
+    const practiceBtn=gid&&S.fcTab!=='due'?`<button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="launchGoalExam('practice',{goalId:'${gid}'})">Take a practice exam</button>`:'';
+    sc.innerHTML=`<div class="deck-empty-state"><div class="ic">${S.fcTab==='due'||S.fcTab==='study'?'✅':'📭'}</div><h3>${S.fcTab==='due'||S.fcTab==='study'?'No cards due':'No words yet'}</h3><p>${S.fcTab==='due'||S.fcTab==='study'?'Check back later or review all words.':'Take a practice exam and save words you miss.'}</p>${practiceBtn}</div>`;
     return;
   }
   const fc=cards[S.fcSingleIdx];
@@ -224,7 +224,7 @@ function renderFcSingleView(){
   const flipped=S.fcSingleFlipped?' flipped':'';
   const wordEnc=encodeURIComponent(fc.word);
   const srsHtml=inVocab?'':'<div class="srs-row" style="margin-top:16px"><button class="srs-btn srs-a" onclick="event.stopPropagation();fcSingleSrs('+fci+',0)">Again</button><button class="srs-btn srs-h" onclick="event.stopPropagation();fcSingleSrs('+fci+',1)">Hard</button><button class="srs-btn srs-g" onclick="event.stopPropagation();fcSingleSrs('+fci+',2)">Good</button><button class="srs-btn srs-e" onclick="event.stopPropagation();fcSingleSrs('+fci+',3)">Easy</button></div>';
-  sc.innerHTML='<div class="fc-single-wrap"><p class="fc-single-meta">Card '+(S.fcSingleIdx+1)+' of '+cards.length+(groupLbl?' · '+esc(groupLbl):'')+'</p><div class="fc-single-card"><div class="fc-single-inner'+flipped+'" id="fcSingleInner" onclick="toggleFcSingleFlip()"><div class="fc-single-face fc-single-front"><div class="fc-single-word">'+esc(fc.word)+'</div>'+(tb?'<div style="margin-bottom:8px">'+tb+'</div>':'')+(fc.phonetic?'<div class="fc-single-phon">'+esc(fc.phonetic)+'</div>':'')+'<button type="button" class="btn-sm blue" onclick="event.stopPropagation();speakBtn(\''+wordEnc+'\',\''+lang+'\',this)">🔊 Pronounce</button>'+exHtml+'<p style="font-size:11px;color:var(--text3);margin-top:14px">Tap card for translation</p></div><div class="fc-single-face fc-single-back"><div class="fc-single-trans">'+esc(tr)+'</div>'+srsHtml+'</div></div></div><div class="fc-single-nav"><button type="button" onclick="fcSinglePrev()"'+((S.fcSingleIdx||0)<=0?' disabled':'')+'>← Prev</button><button type="button" onclick="fcSingleNext('+cards.length+')"'+((S.fcSingleIdx||0)>=cards.length-1?' disabled':'')+'>Next →</button></div></div>';
+  sc.innerHTML='<div class="fc-single-wrap"><div class="progress-wrap" style="margin-bottom:16px"><div class="progress-row"><span>Card '+(S.fcSingleIdx+1)+' of '+cards.length+(groupLbl?' · '+esc(groupLbl):'')+'</span><span>'+Math.round(((S.fcSingleIdx+1)/cards.length)*100)+'%</span></div><div class="progress-track"><div class="progress-fill" style="width:'+Math.round(((S.fcSingleIdx+1)/cards.length)*100)+'%"></div></div></div><div class="fc-single-card"><div class="fc-single-inner'+flipped+'" id="fcSingleInner" onclick="toggleFcSingleFlip()"><div class="fc-single-face fc-single-front"><div class="fc-single-word">'+esc(fc.word)+'</div>'+(tb?'<div style="margin-bottom:8px">'+tb+'</div>':'')+(fc.phonetic?'<div class="fc-single-phon">'+esc(fc.phonetic)+'</div>':'')+'<button type="button" class="btn-sm blue" onclick="event.stopPropagation();speakBtn(\''+wordEnc+'\',\''+lang+'\',this)">🔊 Pronounce</button>'+exHtml+'<p class="fc-single-hint">Tap card for translation</p></div><div class="fc-single-face fc-single-back"><div class="fc-single-trans">'+esc(tr)+'</div>'+srsHtml+'</div></div></div><div class="fc-single-nav"><button type="button" class="btn-sm" onclick="fcSinglePrev()"'+((S.fcSingleIdx||0)<=0?' disabled':'')+'>← Prev</button><button type="button" class="btn-sm accent" onclick="fcSingleNext('+cards.length+')"'+((S.fcSingleIdx||0)>=cards.length-1?' disabled':'')+'>Next →</button></div></div>';
 }
 function renderFCCard(fc,i){
   const id=fcId(fc);
@@ -285,7 +285,7 @@ function renderFC(reinit=true){
     let emptyHtml;
     if(inHub&&goal&&S.fcTab!=='due'){
       const gid=esc(goal.id);
-      emptyHtml=`<div class="deck-empty-state"><div class="ic">📭</div><h3>No difficult words yet</h3><p>Take a practice exam and tap the words you struggle with — they'll appear here as your personal deck.</p><button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="openModeChooser('${gid}')">Take a practice exam</button></div>`;
+      emptyHtml=`<div class="deck-empty-state"><div class="ic">📭</div><h3>No difficult words yet</h3><p>Take a practice exam and tap the words you struggle with — they'll appear here as your personal deck.</p><button type="button" class="btn-start" style="max-width:260px;margin:0 auto" onclick="launchGoalExam('practice',{goalId:'${gid}'})">Take a practice exam</button></div>`;
     }else{
       emptyHtml=`<div class="fc-empty"><span>${S.fcTab==='due'?'\u2705':'\uD83D\uDDC2\uFE0F'}</span>${S.fcTab==='due'?'No cards due for review.':'No words yet.<br>In <b>Practice Mode</b>, click a word and <b>+ Save to Deck</b>, or add manually above.'}</div>`;
     }
@@ -325,7 +325,6 @@ function delFCById(id){
   renderFC(false);
 }
 function setFcLang(lang,btn){S.fcLang=lang;document.querySelectorAll('#fcLangBtns .vt-lb').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderFC(false);}
-function delFC(i){const id=fcId(S.flashcards[i]);delFCById(id);}
 function clearFC(){if(confirm('Remove all words?')){S.flashcards=[];S.fcSelected.clear();saveFC();renderFC();}}
 
 // ═══════════════════════════════════════════
@@ -340,11 +339,11 @@ function startVE(audio){
   const veGoal=getActiveGoal();
   if(typeof ActivityTrack!=='undefined')ActivityTrack.beginSession('vocab_quiz',veGoal?.id,'Vocabulary quiz');
   show('vocabExamScreen');
-  document.getElementById('veTitle').textContent=`${S.veQuestions.length} words · ${pool.length} selected`;
-  const veBack=document.querySelector('#vocabExamScreen .exam-actions .btn-sm:last-child');
-  if(veBack){
-    if(_vocabHub.veFromVocab){veBack.textContent='← Vocabulary';veBack.onclick=backFromVocabQuiz;}
-    else{veBack.textContent='← Deck';veBack.onclick=goFlashcards;}
+  document.getElementById('veTitle').textContent=S.veQuestions.length+' questions';
+  const lede=document.getElementById('veLede');
+  if(lede){
+    const gl=veGoal?goalLabel(veGoal):'Your deck';
+    lede.innerHTML=esc(gl)+' · '+pool.length+' selected · '+(audio?'🔊 audio':'text')+' mode';
   }
   renderVEQ();window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -353,9 +352,9 @@ function renderVEQ(){
   if(S.veIndex>=S.veQuestions.length){
     const pct=Math.round(S.veScore/S.veQuestions.length*100);
     flushOpenStudySession({type:'vocab_quiz',score:pct,label:'Vocabulary quiz · '+pct+'%'});
-    const veDoneBtn=_vocabHub.veFromVocab?'backFromVocabQuiz()':'goFlashcards()';
-    const veDoneLbl=_vocabHub.veFromVocab?'← Back to vocabulary':'← Back to Deck';
-    vc.innerHTML=`<div style="text-align:center;padding:40px 0"><div class="ve-big ${pct>=70?'pass':pct>=50?'mid':'fail'}">${pct}%</div><div style="font-size:14px;color:var(--text2);margin:10px 0 24px">${S.veScore}/${S.veQuestions.length} correct</div><button class="btn-start" onclick="${veDoneBtn}" style="max-width:220px;margin:0 auto">${veDoneLbl}</button></div>`;
+    const veDoneBtn='navBack()';
+    const veDoneLbl='← Back to '+(_vocabHub.veFromVocab?'vocabulary':'deck');
+    vc.innerHTML=`<div class="ws-panel ve-results-panel"><div class="ve-big ${pct>=70?'pass':pct>=50?'mid':'fail'}">${pct}%</div><p class="exam-config-lede">${S.veScore}/${S.veQuestions.length} correct</p><button class="btn-start" onclick="${veDoneBtn}" style="max-width:220px;margin:16px auto 0">${veDoneLbl}</button></div>`;
     return;
   }
   const fc=S.veQuestions[S.veIndex],lang=fc.sourceLang==='de'?'de-DE':'en-GB';
@@ -365,7 +364,8 @@ function renderVEQ(){
   document.getElementById('veProg').textContent=`Question ${S.veIndex+1} of ${S.veQuestions.length}`;
   document.getElementById('veScore').textContent=`Score: ${S.veScore}`;
   document.getElementById('veBar').style.width=(S.veIndex/S.veQuestions.length*100)+'%';
-  vc.innerHTML=`<div class="ve-card">${S.veAudio?`<div style="font-size:13px;color:var(--text3);margin-bottom:10px">What word is this?</div><button class="ve-aud" id="veAudBtn" onclick="speakBtn('${encodeURIComponent(fc.word)}','${lang}',this)">🔊 Play audio</button>`:`<div class="ve-word">${fc.word}</div>${fc.phonetic?`<div class="ve-meta">${fc.phonetic}</div>`:''}`}</div><div class="ve-opts" id="veOpts" data-correct="${esc(tr)}">${opts.map((o,oi)=>`<div class="ve-opt" data-ans="${esc(o)}" data-idx="${oi}">${o}</div>`).join('')}</div>`;
+  const qHtml=S.veAudio?`<p class="ve-prompt-lbl">What word is this?</p><button type="button" class="ve-aud btn-sm blue" id="veAudBtn" onclick="speakBtn('${encodeURIComponent(fc.word)}','${lang}',this)">🔊 Play audio</button>`:`<div class="ve-word">${esc(fc.word)}</div>${fc.phonetic?`<div class="ve-meta">${esc(fc.phonetic)}</div>`:''}`;
+  vc.innerHTML=`<div class="ws-panel ve-question-panel">${qHtml}</div><div class="ve-opts options" id="veOpts" data-correct="${esc(tr)}">${opts.map((o,oi)=>`<div class="ve-opt opt" data-ans="${esc(o)}" data-idx="${oi}">${esc(o)}</div>`).join('')}</div>`;
   document.getElementById('veOpts')?.addEventListener('click',ansVE,{once:false});
 }
 function ansVE(ev){

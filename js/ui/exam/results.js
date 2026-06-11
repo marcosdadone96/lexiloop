@@ -356,14 +356,15 @@ function getResultsRecommendedAction(score,mods,deckN,practiceMode){
   const weak=getResultsWeakModules(mods,false);
   if(practiceMode&&deckN>=4)return{title:'Generate a personalized exam',desc:`You saved ${deckN} words from this session. Build a mock test from your weak vocabulary.`,cta:'Personalized exam →',run:workspaceAction('exams',()=>goal&&openExamConfigurator(goal.id))};
   if(practiceMode&&deckN>0)return{title:'Review saved vocabulary',desc:`${deckN} word${deckN!==1?'s':''} detected from mistakes. Strengthen them before your next exam.`,cta:'Review flashcards →',run:workspaceAction('vocabulary',()=>goal&&openDeckHub(goal.id))};
-  if(weak.length)return{title:'Practice your weak modules',desc:`Focus on ${weak.map(w=>w.label).join(', ')} in practice mode and save words you miss.`,cta:'Practice again →',run:()=>{S.mode='practice';selectMode('practice');startMockExam();}};
-  if(score<70)return{title:'Retake in practice mode',desc:'Save difficult words as you go — they become your personalized study plan.',cta:'Practice exam →',run:()=>{S.mode='practice';selectMode('practice');startMockExam();}};
-  return{title:'Take another mock exam',desc:'Keep building exam readiness with another official-format test.',cta:'Next exam →',run:()=>startMockExam()};
+  if(weak.length)return{title:'Practice your weak modules',desc:`Focus on ${weak.map(w=>w.label).join(', ')} in practice mode and save words you miss.`,cta:'Practice again →',run:()=>startMockExam('practice')};
+  if(score<70)return{title:'Retake in practice mode',desc:'Save difficult words as you go — they become your personalized study plan.',cta:'Practice exam →',run:()=>startMockExam('practice')};
+  return{title:'Take another mock exam',desc:'Keep building exam readiness with another official-format test.',cta:'Next exam →',run:()=>startMockExam('official')};
 }
 function renderResults(score,mods,d,isDE,writeAns,speakAns,entryId,correction,speakingEvals,savedWordsOverride,markedWordsOverride){
   hideAll();
   S.lastResults={score,mods,d,isDE,correction,speakingEvals};
-  const scr=document.getElementById('resultsScreen');scr.style.display='block';
+  show('resultsScreen');
+  const scr=document.getElementById('resultsScreen');
   const cls=score>=70?'pass':score>=50?'mid':'fail';
   const label=score>=70?(isDE?'Bestanden ✓':'Pass ✓'):score>=50?(isDE?'Knapp':'Close'):isDE?'Nicht bestanden':'Fail';
   const corrHtml=correction?renderCorrectionHtml(correction,d,isDE):'';
@@ -400,7 +401,7 @@ function renderResults(score,mods,d,isDE,writeAns,speakAns,entryId,correction,sp
     :markedList.length?`Official exam complete. Review the ${markedList.length} word${markedList.length===1?'':'s'} you marked below — save them to your deck for personalized practice.`
     :`Official exam complete. Next time, tap words you struggle with during the exam to review them here.`;
   scr.innerHTML=`
-    <button class="back-btn" onclick="backToWorkspace('exams')">← Workspace</button>
+    ${renderNavBackBtn('Exams')}
     <div class="card results-hero">
       <div class="res-score ${cls}">${score}%</div>
       <div class="res-label">${label} — ${d.level} ${d.lang==='de'?'🇩🇪':'🇬🇧'} ${esc(d.topic)}</div>

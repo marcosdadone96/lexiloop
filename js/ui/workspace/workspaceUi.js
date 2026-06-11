@@ -155,7 +155,6 @@ function renderWsExamsHtml(goal){
       <button type="button" class="ws-exam-card ws-exam-card--official" onclick="startOverviewExam('official')"><span class="ws-exam-card-ic">🏛</span><span class="ws-exam-card-title">Official</span><span class="ws-exam-card-desc">Timed · no translations</span></button>
       <button type="button" class="ws-exam-card ws-exam-card--practice" onclick="startOverviewExam('practice')"><span class="ws-exam-card-ic">📚</span><span class="ws-exam-card-title">Practice</span><span class="ws-exam-card-desc">Translations + save words</span></button>
       <button type="button" class="ws-exam-card ws-exam-card--personal" onclick="openExamConfigurator('${gid}')"><span class="ws-exam-card-ic">✦</span><span class="ws-exam-card-title">Personalized</span><span class="ws-exam-card-desc">${esc(persDesc)}</span></button>
-      <button type="button" class="ws-exam-card ws-exam-card--oral" onclick="location.href='oral.html'"><span class="ws-exam-card-ic">🎤</span><span class="ws-exam-card-title">Oral</span><span class="ws-exam-card-desc">Speaking practice with AI</span></button>
     </div>
     <p class="ws-seclbl">Quick modules</p>
     <div class="quick-btns" style="margin-bottom:18px">
@@ -258,34 +257,28 @@ function renderWsCoachBannerHtml(goal,act,compact){
       <button type="button" class="btn-sm accent" style="margin-top:14px" onclick="runRecommendedAction()">${esc(act.cta)}</button>
     </div>`;
 }
-function wsOvTablerIcon(name){
-  const icons={
-    cards:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="16" height="16" rx="2"/>',
-    stack:'<path d="M8 8h12v12H8z"/><path d="M4 4h12v12H4z"/>',
-    bolt:'<path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/>',
-    gamepad:'<rect x="4" y="8" width="16" height="10" rx="3"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/><path d="M11 11v4"/>',
-    message:'<path d="M4 6h16v10H8l-4 4V6z"/>',
-    play:'<path d="M9 6v12l10-6z"/>',
-  };
-  const d=icons[name]||icons.cards;
-  return'<svg viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
-}
-async function startOverviewExam(mode){
-  const goal=getActiveGoal();
+async function launchGoalExam(mode,options){
+  const opts=options||{};
+  let goal=opts.goalId?S.goals.find(g=>g.id===opts.goalId):getActiveGoal();
   if(!goal){showAddGoalWizard();return;}
   if(!canGenerate()){showUpgrade();return;}
   const m=normalizeMode(mode);
-  if(m==='official')abortOfficialInProgress();
-  S.mode=m;
-  S.subject=goal.subject;
-  S.level=goal.level;
-  S.activeGoalId=goal.id;
-  syncGoalToProfile(goal);
-  saveGoals();
-  if(m==='practice')S.vocabLang=vocabLangFor(goal.subject);
-  selectMode(m);
-  initExamSession(m);
-  try{await generateExam();}catch(e){lcToast(e.message||'Exam generation failed','error');}
+  const run=async()=>{
+    if(m==='official')abortOfficialInProgress();
+    S.mode=m;
+    S.subject=goal.subject;
+    S.level=goal.level;
+    S.activeGoalId=goal.id;
+    syncGoalToProfile(goal);
+    saveGoals();
+    setExamMode(m);
+    initExamSession(m);
+    try{await generateExam();}catch(e){lcToast(e.message||'Exam generation failed','error');}
+  };
+  confirmQuotaUse(run);
+}
+async function startOverviewExam(mode){
+  return launchGoalExam(mode);
 }
 function renderGoalWorkspace(){
   const goal=getActiveGoal();
@@ -317,6 +310,7 @@ function renderGoalWorkspace(){
   if(pb)pb.classList.toggle('profile-bar--workspace',true);
   const pbl=document.getElementById('profileBarLabel');
   if(pbl)pbl.textContent='Preparing for';
+  if(typeof syncWorkspaceBackBtn==='function')syncWorkspaceBackBtn();
 }
 function openGoalWorkspace(id,tab,skipUrl){
   if(!requireAppAuth())return;

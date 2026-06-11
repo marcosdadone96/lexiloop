@@ -79,7 +79,6 @@ function saveActiveSession(){
   if(S.activeSession)localStorage.setItem('lc_active_session',JSON.stringify(S.activeSession));
   else localStorage.removeItem('lc_active_session');
 }
-function saveLS(){saveGoals();saveActiveSession();}
 function normalizeMode(m){return m==='real'||m==='official'?'official':'practice';}
 function migrateSavedExams(){
   if(!Array.isArray(S.savedExams))S.savedExams=[];

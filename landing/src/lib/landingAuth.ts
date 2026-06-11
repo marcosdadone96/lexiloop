@@ -1,5 +1,15 @@
 type SupabaseAuthClient = {
   auth: {
+    getSession: () => Promise<{
+      data: { session?: { access_token?: string } | null };
+      error: { message?: string } | null;
+    }>;
+    onAuthStateChange: (
+      cb: (
+        event: string,
+        session: { access_token?: string } | null,
+      ) => void | Promise<void>,
+    ) => { data: { subscription: { unsubscribe: () => void } } };
     signInWithPassword: (args: { email: string; password: string }) => Promise<{
       data: { session?: { access_token?: string } | null };
       error: { message?: string } | null;
@@ -121,6 +131,7 @@ async function getSupabase(): Promise<SupabaseAuthClient | null> {
         detectSessionInUrl: false,
         flowType: 'pkce',
         storageKey: 'lc-supabase-auth',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       },
     });
   }
@@ -147,13 +158,38 @@ function mapSupabaseError(err: { message?: string } | null) {
   return err?.message || 'Authentication failed.';
 }
 
+export type SessionUser = {
+  name?: string;
+  email?: string;
+  plan?: string;
+  guest?: boolean;
+  pro?: boolean;
+};
+
 export function persistSession(token: string, user?: unknown) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.removeItem(GUEST_KEY);
   if (user) localStorage.setItem('lc_user', JSON.stringify(user));
 }
 
-async function exchangeSupabaseSession(accessToken: string) {
+export function clearSessionStorage() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem('lc_user');
+  localStorage.removeItem(GUEST_KEY);
+}
+
+async function fetchMeWithToken(token: string): Promise<SessionUser | null> {
+  const res = await fetch('/.netlify/functions/auth-me', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => ({}));
+  const user = (data.user || data) as SessionUser;
+  if (user?.email) persistSession(token, user);
+  return user?.email ? user : null;
+}
+
+export async function exchangeSupabaseSession(accessToken: string) {
   const res = await fetch('/.netlify/functions/auth-supabase-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -164,6 +200,73 @@ async function exchangeSupabaseSession(accessToken: string) {
   if (!data.token) throw new Error('No token received');
   persistSession(data.token, data.user);
   return data;
+}
+
+/** Restore API session from lc_token or shared Supabase storage (lc-supabase-auth). */
+export async function restoreSession(): Promise<SessionUser | null> {
+  if (localStorage.getItem(GUEST_KEY) === '1') return null;
+
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    const user = await fetchMeWithToken(token);
+    if (user) return user;
+    clearSessionStorage();
+  }
+
+  const cfg = await getAuthConfig();
+  if (cfg.supabase) {
+    const sb = await getSupabase();
+    if (sb) {
+      const { data } = await sb.auth.getSession();
+      if (data?.session?.access_token) {
+        try {
+          const result = await exchangeSupabaseSession(data.session.access_token);
+          return (result.user as SessionUser) || null;
+        } catch {
+          /* fall through */
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+export async function logoutSession() {
+  try {
+    const sb = await getSupabase();
+    if (sb) await sb.auth.signOut();
+  } catch {
+    /* ignore */
+  }
+  clearSessionStorage();
+}
+
+let authListenerBound = false;
+
+/** Keep lc_token in sync when Supabase refreshes the shared session. */
+export async function bindSupabaseAuthListener(onChange: (user: SessionUser | null) => void) {
+  if (authListenerBound || typeof window === 'undefined') return;
+  const cfg = await getAuthConfig();
+  if (!cfg.supabase) return;
+  const sb = await getSupabase();
+  if (!sb) return;
+  authListenerBound = true;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_OUT') {
+      clearSessionStorage();
+      onChange(null);
+      return;
+    }
+    if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && session?.access_token) {
+      try {
+        const result = await exchangeSupabaseSession(session.access_token);
+        onChange((result.user as SessionUser) || null);
+      } catch {
+        onChange(null);
+      }
+    }
+  });
 }
 
 export async function loginWithEmail(email: string, password: string) {

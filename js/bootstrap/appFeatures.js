@@ -138,20 +138,6 @@
       }
     }
 
-    const warn = document.getElementById('quotaWarning');
-    const btn = document.getElementById('btnStart');
-    if (warn && btn) {
-      if (!canGenerate()) {
-        warn.style.display = 'block';
-        warn.textContent = guest
-          ? 'Guest limit reached. Create a free account to keep progress and generate more exams.'
-          : `You've used all ${max} exams this month (pool or AI). Retake a saved exam for free, or upgrade to Pro for 20/month.`;
-        btn.disabled = true;
-      } else {
-        warn.style.display = 'none';
-        if (S.level) btn.disabled = false;
-      }
-    }
   };
 
   window.showQuotaExceededModal = function (err) {
@@ -191,7 +177,7 @@
     try {
       if (!canGenerate()) {
         hideAll();
-        show('levelScreen');
+        backToWorkspace('exams');
         showQuotaExceededModal({ used: getQuotaUsed(), max: getQuotaMax(), plan: S.plan });
         return;
       }
@@ -257,8 +243,7 @@
       }
 
       if (typeof QuestionLibrary !== 'undefined' && QuestionLibrary.hasLibrary(S.subject, S.level)) {
-        hideAll();
-        show('levelScreen');
+        backToWorkspace('exams');
         if (typeof showToast === 'function') {
           showToast('Could not assemble an exam from the question library. Please try again.', 'warn', 5000);
         } else {
@@ -269,8 +254,7 @@
 
       const topic = await pickExamTopic(S.subject, S.level);
       if (!canGenerate()) {
-        hideAll();
-        show('levelScreen');
+        backToWorkspace('exams');
         const avail = typeof ExamLibrary !== 'undefined' ? ExamLibrary.availableLevels(S.subject) : [];
         const langLbl =
           typeof SubjectMeta !== 'undefined'
@@ -324,8 +308,7 @@
       renderExam();
     } catch (e) {
       if (typeof showExamError === 'function') { showExamError(e); return; }
-      hideAll();
-      show('levelScreen');
+      backToWorkspace('exams');
       if (e.code === 'quota_exceeded') {
         showQuotaExceededModal(e);
         return;
@@ -354,10 +337,6 @@
       if (typeof showToast === 'function') showToast(msg, 'error', 5000);
       else alert('Error generating exam.\n\n' + msg);
     }
-  };
-
-  window.generateDemoExam = function () {
-    window.location.href = '/demo';
   };
 
   window.activatePro = async function () {
