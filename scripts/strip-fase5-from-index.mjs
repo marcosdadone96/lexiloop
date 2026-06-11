@@ -79,13 +79,13 @@ src = src.replace(
 );
 
 // Script tags before inline script
-const scripts = `<script src="js/goalStore.js?v=1"></script>
-<script src="js/dashboardLayout.js?v=1"></script>
-<script src="js/dashboardUi.js?v=1"></script>
-<script src="js/workspaceUi.js?v=1"></script>
+const scripts = `<script src="js/data/goalStore.js?v=1"></script>
+<script src="js/ui/dashboard/dashboardLayout.js?v=1"></script>
+<script src="js/ui/dashboard/dashboardUi.js?v=1"></script>
+<script src="js/ui/workspace/workspaceUi.js?v=1"></script>
 `;
-if (!src.includes('js/goalStore.js')) {
-  src = src.replace('<script src="js/manualVocab.js?v=2"></script>', `<script src="js/manualVocab.js?v=2"></script>\n${scripts}`);
+if (!src.includes('js/data/goalStore.js')) {
+  src = src.replace('<script src="js/data/manualVocab.js?v=2"></script>', `<script src="js/data/manualVocab.js?v=2"></script>\n${scripts}`);
 }
 
 // Fix loadLS goals section

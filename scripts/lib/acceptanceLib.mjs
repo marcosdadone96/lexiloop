@@ -36,8 +36,8 @@ export function loadEngine() {
   require(path.join(ROOT, 'js', 'engine', 'validation', 'ExamValidator.js'));
   require(path.join(ROOT, 'js', 'engine', 'generators', 'chunkRunner.js'));
   require(path.join(ROOT, 'js', 'engine', 'generators', 'ExamGenerator.js'));
-  const { normalizeSpanishExam } = require(path.join(ROOT, 'js', 'examSpanishNormalize.js'));
-  const { examUiStrings } = require(path.join(ROOT, 'js', 'examUiLocale.js'));
+  const { normalizeSpanishExam } = require(path.join(ROOT, 'js', 'i18n', 'examSpanishNormalize.js'));
+  const { examUiStrings } = require(path.join(ROOT, 'js', 'i18n', 'examUiLocale.js'));
 
   return {
     KnowledgeEngine: require(path.join(ROOT, 'js', 'engine', 'knowledge', 'KnowledgeEngine.js')),
@@ -57,7 +57,7 @@ export function chunkCount(spec) {
 
 export function normalizeCambridgeExam(d) {
   if (!d || (!d.readingParts && !d.listeningParts)) return d;
-  const { normalizeSpanishExam } = require(path.join(ROOT, 'js', 'examSpanishNormalize.js'));
+  const { normalizeSpanishExam } = require(path.join(ROOT, 'js', 'i18n', 'examSpanishNormalize.js'));
   const out = normalizeSpanishExam({
     ...d,
     lang: 'en',

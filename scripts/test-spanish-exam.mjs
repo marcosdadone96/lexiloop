@@ -10,8 +10,8 @@ import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-const { normalizeSpanishExam } = require(path.join(ROOT, 'js/examSpanishNormalize.js'));
-const { examUiStrings } = require(path.join(ROOT, 'js/examUiLocale.js'));
+const { normalizeSpanishExam } = require(path.join(ROOT, 'js/i18n/examSpanishNormalize.js'));
+const { examUiStrings } = require(path.join(ROOT, 'js/i18n/examUiLocale.js'));
 const ExamValidator = require(path.join(ROOT, 'js/engine/validation/ExamValidator.js'));
 const validator = new ExamValidator();
 
