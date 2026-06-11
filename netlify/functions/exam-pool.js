@@ -34,6 +34,22 @@ function pickRandom(arr, n) {
   return out;
 }
 
+function poolKeyId(key) {
+  return String(key || '').split(':').pop();
+}
+
+function parseExcludeSet(params) {
+  const raw = String(params.exclude || '').trim();
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 40),
+  );
+}
+
 exports.handler = async (event) => {
   const cors = corsHeaders(event, 'GET, POST, OPTIONS');
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: cors };
@@ -44,8 +60,10 @@ exports.handler = async (event) => {
     const params = event.queryStringParameters || {};
     const lang = String(params.lang || '').trim().toLowerCase();
     const level = String(params.level || '').trim().toUpperCase();
+    const exclude = parseExcludeSet(params);
+    const getHeaders = { ...cors, 'Cache-Control': 'no-store' };
     if (!lang || !level) {
-      return jsonResponse(400, cors, { error: 'lang and level required' });
+      return jsonResponse(400, getHeaders, { error: 'lang and level required' });
     }
 
     let index = [];
@@ -55,11 +73,13 @@ exports.handler = async (event) => {
       index = [];
     }
     if (!index.length) {
-      return jsonResponse(200, cors, { found: false });
+      return jsonResponse(200, getHeaders, { found: false });
     }
 
     const recent = index.slice(-POOL_SAMPLE);
-    const candidates = pickRandom(recent, Math.min(recent.length, POOL_SAMPLE));
+    const candidates = pickRandom(recent, Math.min(recent.length, POOL_SAMPLE)).filter(
+      (key) => !exclude.has(poolKeyId(key)),
+    );
     const fresh = [];
 
     for (const key of candidates) {
@@ -85,7 +105,7 @@ exports.handler = async (event) => {
       }
     }
     if (!pool.length) {
-      return jsonResponse(200, cors, { found: false });
+      return jsonResponse(200, getHeaders, { found: false });
     }
 
     const chosen = pool[Math.floor(Math.random() * pool.length)];
@@ -93,8 +113,9 @@ exports.handler = async (event) => {
     chosen.entry.lastServedAt = Date.now();
     await store.setJSON(chosen.key, chosen.entry);
 
-    return jsonResponse(200, cors, {
+    return jsonResponse(200, getHeaders, {
       found: true,
+      id: poolKeyId(chosen.key),
       exam: chosen.entry.exam,
       topic: chosen.entry.topic,
       source: 'pool',
