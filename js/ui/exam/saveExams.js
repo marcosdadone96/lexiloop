@@ -18,8 +18,9 @@ function saveCurrentExam(statusOverride){
   };
   if(existing>=0)S.savedExams[existing]={...S.savedExams[existing],...entry};
   else S.savedExams.unshift(entry);
-  if(S.savedExams.length>20)S.savedExams=S.savedExams.slice(0,20);
+  if(S.savedExams.length>50)S.savedExams=S.savedExams.slice(0,50);
   saveSaved();
+  if(typeof syncExamRouteUrl==='function')syncExamRouteUrl();
   document.querySelectorAll('[onclick="saveCurrentExam()"]').forEach(btn=>{
     const orig=btn.textContent;
     btn.textContent='\u2713 Saved!';
@@ -46,7 +47,7 @@ function reviewSavedExam(i){
   const markedN=(e.markedWords||[]).length;
   scr.innerHTML=`${renderNavBackBtn('Exams')}
     <div class="results-hero"><div class="res-score mid">—</div><div class="res-label">${stLbl} — ${esc(e.level)} ${examFlag(e.lang)} ${esc(e.topic)}</div></div>
-    <div class="results-detail"><p style="font-size:13px;font-weight:600;color:var(--text2)">${e.status==='aborted'?'This official exam was ended when you started a new one. It was not submitted.':e.status==='in_progress'?'This practice exam was saved before completion. Resume to continue or retake from scratch.':'Saved exam snapshot.'} ${ansN} answer${ansN===1?'':'s'} recorded${markedN?`, ${markedN} word${markedN===1?'':'s'} marked`:''}.</p></div>
+    <div class="results-detail"><p style="font-size:13px;font-weight:600;color:var(--text-secondary)">${e.status==='aborted'?'This official exam was ended when you started a new one. It was not submitted.':e.status==='in_progress'?'This practice exam was saved before completion. Resume to continue or retake from scratch.':'Saved exam snapshot.'} ${ansN} answer${ansN===1?'':'s'} recorded${markedN?`, ${markedN} word${markedN===1?'':'s'} marked`:''}.</p></div>
     <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:22px">
       ${e.status==='in_progress'?`<button class="btn-sm accent" onclick="retakeExam(${i},true)">Resume</button>`:''}
       <button class="btn-sm blue" onclick="retakeExam(${i})">↺ Retake from start</button>
@@ -58,6 +59,7 @@ function retakeExam(i,resume){
   const e=S.savedExams[i];
   if(!e)return;
   S.examData=e.data;
+  S.examData._fromSaved=true;
   S.quickMod=null;
   S.subject=e.lang;S.level=e.level;
   S.mode=normalizeMode(e.mode||'official');
@@ -82,6 +84,18 @@ function retakeExam(i,resume){
   }
   renderExam();
 }
-function deleteSaved(i){if(confirm('Remove this saved exam?')){S.savedExams.splice(i,1);saveSaved();const goal=getActiveGoal();if(goal&&document.getElementById('wsSavedGrid'))renderWsSavedExams(goal);}}
+function deleteSaved(i){
+  if(!confirm('Remove this saved exam?'))return;
+  const removed=S.savedExams[i];
+  if(removed?.id){
+    if(!Array.isArray(S.deletedSavedExams))S.deletedSavedExams=[];
+    S.deletedSavedExams.push({id:removed.id,deletedAt:Date.now()});
+    try{localStorage.setItem('lc_saved_del',JSON.stringify(S.deletedSavedExams));}catch(_){}
+  }
+  S.savedExams.splice(i,1);
+  saveSaved();
+  const goal=getActiveGoal();
+  if(goal&&document.getElementById('wsSavedGrid'))renderWsSavedExams(goal);
+}
 
 // History UI now lives in the workspace Progress tab (renderGoalHistoryHtml in workspaceUi.js).

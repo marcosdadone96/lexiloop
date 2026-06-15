@@ -4,10 +4,10 @@
 const S={
   ui:'en',subject:null,level:null,mode:'official',examData:null,activeSession:null,lastMarkedWords:[],
   answers:{},gapAnswers:{},vocabLang:'en',vocabCache:{},
-  user:null,flashcards:[],fcLang:'es',fcTab:'all',fcSelected:new Set(), /* Set of flashcard ids */
+  user:null,flashcards:[],deletedFlashcards:[],fcLang:'es',fcTab:'all',fcSelected:new Set(), /* Set of flashcard ids */
   veQuestions:[],veIndex:0,veScore:0,veAudio:false,
   timerInt:null,timerSec:0,history:[],quickMod:null,studyIdx:0,
-  savedExams:[],listenPlays:2,isDemo:false,examSavedWords:[],
+  savedExams:[],deletedSavedExams:[],listenPlays:2,isDemo:false,examSavedWords:[],
   profileCert:null,profileLevel:null,
   goals:[],activeGoalId:null,deckGoalFilter:null,fcTypeFilter:'all',wsTab:'exams',
   activityLog:[],studyTime:null,dashboardLayout:null
@@ -18,7 +18,7 @@ const LEVELS={
   es:[{code:'A1',name:'DELE A1',desc:'Instituto Cervantes',time:90},{code:'A2',name:'DELE A2',desc:'Instituto Cervantes',time:105},{code:'B1',name:'DELE B1',desc:'Instituto Cervantes',time:150},{code:'B2',name:'DELE B2',desc:'Instituto Cervantes',time:175},{code:'C1',name:'DELE C1',desc:'Instituto Cervantes',time:210},{code:'C2',name:'DELE C2',desc:'Instituto Cervantes',time:225}]
 };
 const LANGS=[{code:'en',l:'EN',n:'English'},{code:'es',l:'ES',n:'Spanish'},{code:'fr',l:'FR',n:'French'},{code:'pt',l:'PT',n:'Portuguese'},{code:'it',l:'IT',n:'Italian'},{code:'nl',l:'NL',n:'Dutch'},{code:'pl',l:'PL',n:'Polish'},{code:'ru',l:'RU',n:'Russian'},{code:'zh',l:'ZH',n:'Chinese'},{code:'ja',l:'JA',n:'Japanese'},{code:'ar',l:'AR',n:'Arabic'},{code:'tr',l:'TR',n:'Turkish'},{code:'uk',l:'UK',n:'Ukrainian'}];
-const FREE_QUOTA=2, PRO_QUOTA=20;
+const GUEST_QUOTA=2, FREE_QUOTA=5, PRO_QUOTA=12;
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function certLbl(s,l){return typeof SubjectMeta!=='undefined'?SubjectMeta.certLabel(s,l):(s==='de'?'Goethe':s==='es'?'DELE':'Cambridge')+' '+l;}
 function examFlag(lang){return lang==='de'?'🇩🇪':lang==='es'?'🇪🇸':'🇬🇧';}
@@ -46,10 +46,14 @@ function loadLS(){
   try{const u=localStorage.getItem('lc_user');if(u)S.user=JSON.parse(u);}catch(e){}
   try{const f=localStorage.getItem('lc_fc');if(f)S.flashcards=JSON.parse(f);}catch(e){}
   if(!Array.isArray(S.flashcards))S.flashcards=[];
+  try{const fd=localStorage.getItem('lc_fc_del');if(fd)S.deletedFlashcards=JSON.parse(fd);}catch(e){}
+  if(!Array.isArray(S.deletedFlashcards))S.deletedFlashcards=[];
   try{const h=localStorage.getItem('lc_hist');if(h)S.history=JSON.parse(h);}catch(e){}
   if(!Array.isArray(S.history))S.history=[];
   try{const sv=localStorage.getItem('lc_saved');if(sv)S.savedExams=JSON.parse(sv);}catch(e){}
   if(!Array.isArray(S.savedExams))S.savedExams=[];
+  try{const sd=localStorage.getItem('lc_saved_del');if(sd)S.deletedSavedExams=JSON.parse(sd);}catch(e){}
+  if(!Array.isArray(S.deletedSavedExams))S.deletedSavedExams=[];
   try{const gr=localStorage.getItem('lc_goals');if(gr)S.goals=JSON.parse(gr);}catch(e){}
   if(!Array.isArray(S.goals))S.goals=[];
   try{const ag=localStorage.getItem('lc_active_goal');if(ag)S.activeGoalId=ag;}catch(e){}
@@ -64,6 +68,7 @@ function loadLS(){
   S.dashboardLayout=loadDashboardLayout();
   let migrated=GoalStore.migrateFromLegacy();
   if(migrated)GoalStore.save();
+  try{const xl=localStorage.getItem('lc_pref_xlat');if(xl)S.fcLang=xl;}catch(e){}
   try{const as=localStorage.getItem('lc_active_session');if(as)S.activeSession=JSON.parse(as);}catch(e){}
   if(S.mode==='real')S.mode='official';
   if(S.activeSession?.mode==='real')S.activeSession.mode='official';
@@ -104,7 +109,7 @@ async function bootstrapAuth(timeoutMs){
       new Promise((_,reject)=>setTimeout(()=>reject(new Error('auth_timeout')),timeoutMs||8000))
     ]);
   }catch(e){
-    console.warn('[auth] bootstrap failed:',e.message||e);
+    lcDebug.warn('[auth] bootstrap failed:',e.message||e);
     return false;
   }
 }
@@ -249,7 +254,7 @@ function abortOfficialInProgress(){
   };
   const idx=S.savedExams.findIndex(e=>e.id===id);
   if(idx>=0)S.savedExams[idx]={...S.savedExams[idx],...entry};
-  else{S.savedExams.unshift(entry);if(S.savedExams.length>20)S.savedExams=S.savedExams.slice(0,20);}
+  else{S.savedExams.unshift(entry);if(S.savedExams.length>50)S.savedExams=S.savedExams.slice(0,50);}
   saveSaved();
   S._officialInProgress=null;
   S.activeSession=null;

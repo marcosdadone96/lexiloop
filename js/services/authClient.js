@@ -96,13 +96,21 @@ const Auth = (() => {
         applyServerQuota({ used: getQuotaUsed?.() || 0, max: 2, plan: 'guest' });
       }
     }
+    if (typeof applyFreeCombo === 'function') applyFreeCombo(user);
   }
 
-  async function exchangeSupabaseSession(accessToken) {
+  function pendingComboPayload() {
+    if (typeof readRegisterComboFromForm !== 'function') return {};
+    const combo = readRegisterComboFromForm();
+    return { lang: combo.lang, level: combo.level };
+  }
+
+  async function exchangeSupabaseSession(accessToken, comboExtra) {
+    const combo = comboExtra || pendingComboPayload();
     const { res, data } = await api('auth-supabase-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_token: accessToken }),
+      body: JSON.stringify({ access_token: accessToken, ...combo }),
     });
     if (!res.ok) throw new Error(mapAuthError(data.error));
     clearGuest();
@@ -125,13 +133,25 @@ const Auth = (() => {
     };
     return {
       flashcards: Array.isArray(S.flashcards) ? S.flashcards : read('lc_fc', []),
+      deletedFlashcards: Array.isArray(S.deletedFlashcards) ? S.deletedFlashcards : read('lc_fc_del', []),
       history: Array.isArray(S.history) ? S.history : read('lc_hist', []),
       savedExams: Array.isArray(S.savedExams) ? S.savedExams : read('lc_saved', []),
+      deletedSavedExams: Array.isArray(S.deletedSavedExams) ? S.deletedSavedExams : read('lc_saved_del', []),
       activityLog: Array.isArray(S.activityLog) ? S.activityLog : read('lc_activity', []),
       studyTime:
         S.studyTime && typeof S.studyTime === 'object'
           ? S.studyTime
           : read('lc_time', typeof ActivityTrack !== 'undefined' ? ActivityTrack.defaultStudyTime() : {}),
+      mastery:
+        typeof AnalyticsStore !== 'undefined'
+          ? AnalyticsStore.exportSnapshot()
+          : read('lc_mastery', { profiles: {} }),
+      burned:
+        typeof BurnedRegistry !== 'undefined'
+          ? BurnedRegistry.toPayload()
+          : read('lc_burned', { v: 1, keys: [], ids: [] }),
+      goals: Array.isArray(S.goals) ? S.goals : read('lc_goals', []),
+      activeGoalId: S.activeGoalId || localStorage.getItem('lc_active_goal') || null,
     };
   }
 
@@ -146,21 +166,60 @@ const Auth = (() => {
         ? mergeSyncPayload(localBefore, server)
         : {
             flashcards: Array.isArray(server.flashcards) ? server.flashcards : localBefore.flashcards,
+            deletedFlashcards: Array.isArray(server.deletedFlashcards) ? server.deletedFlashcards : localBefore.deletedFlashcards,
             history: Array.isArray(server.history) ? server.history : localBefore.history,
             savedExams: Array.isArray(server.savedExams) ? server.savedExams : localBefore.savedExams,
+            deletedSavedExams: Array.isArray(server.deletedSavedExams) ? server.deletedSavedExams : localBefore.deletedSavedExams,
             activityLog: Array.isArray(server.activityLog) ? server.activityLog : localBefore.activityLog,
             studyTime: server.studyTime && typeof server.studyTime === 'object' ? server.studyTime : localBefore.studyTime,
+            mastery: server.mastery && typeof server.mastery === 'object' ? server.mastery : localBefore.mastery,
+            burned: server.burned && typeof server.burned === 'object' ? server.burned : localBefore.burned,
           };
     S.flashcards = merged.flashcards;
+    S.deletedFlashcards = merged.deletedFlashcards || [];
     S.history = merged.history;
     S.savedExams = merged.savedExams;
+    S.deletedSavedExams = merged.deletedSavedExams || [];
     S.activityLog = merged.activityLog || [];
     S.studyTime = merged.studyTime || (typeof ActivityTrack !== 'undefined' ? ActivityTrack.defaultStudyTime() : {});
+    if (typeof AnalyticsStore !== 'undefined' && merged.mastery) {
+      AnalyticsStore.replaceSnapshot(merged.mastery);
+    } else if (merged.mastery) {
+      localStorage.setItem('lc_mastery', JSON.stringify(merged.mastery));
+    }
     localStorage.setItem('lc_fc', JSON.stringify(S.flashcards));
+    localStorage.setItem('lc_fc_del', JSON.stringify(S.deletedFlashcards));
     localStorage.setItem('lc_hist', JSON.stringify(S.history));
     localStorage.setItem('lc_saved', JSON.stringify(S.savedExams));
+    localStorage.setItem('lc_saved_del', JSON.stringify(S.deletedSavedExams));
     localStorage.setItem('lc_activity', JSON.stringify(S.activityLog));
     localStorage.setItem('lc_time', JSON.stringify(S.studyTime));
+    if (merged.burned) { localStorage.setItem('lc_burned', JSON.stringify(merged.burned)); if (typeof S !== 'undefined') S.burned = null; }
+    if (Array.isArray(merged.goals)) {
+      S.goals = merged.goals;
+      localStorage.setItem('lc_goals', JSON.stringify(merged.goals));
+    }
+    if (merged.activeGoalId) {
+      S.activeGoalId = merged.activeGoalId;
+      localStorage.setItem('lc_active_goal', merged.activeGoalId);
+    }
+    if (typeof AnalyticsStore !== 'undefined') {
+      localStorage.setItem(AnalyticsStore.KEY, JSON.stringify(AnalyticsStore.exportSnapshot()));
+    }
+    // Apply user preferences from server (translation language, TTS voice)
+    const serverPrefs = server.preferences;
+    if (serverPrefs) {
+      const xlat = Array.isArray(serverPrefs.translationLangs) && serverPrefs.translationLangs[0];
+      if (xlat && typeof S !== 'undefined') {
+        S.fcLang = xlat;
+        try { localStorage.setItem('lc_pref_xlat', xlat); } catch (_) {}
+      }
+      if (serverPrefs.ttsVoices && typeof setTtsVoicePref === 'function') {
+        Object.entries(serverPrefs.ttsVoices || {}).forEach(([lang, voice]) => {
+          if (voice) setTtsVoicePref(lang, voice);
+        });
+      }
+    }
     if (typeof updBadges === 'function') updBadges();
     if (typeof updQuotaUI === 'function') updQuotaUI();
     await pushSync();
@@ -174,10 +233,28 @@ const Auth = (() => {
       body: JSON.stringify({
         data: {
           flashcards: S.flashcards,
+          deletedFlashcards: S.deletedFlashcards || [],
           history: S.history,
           savedExams: S.savedExams,
+          deletedSavedExams: S.deletedSavedExams || [],
           activityLog: S.activityLog || [],
           studyTime: S.studyTime || {},
+          mastery:
+            typeof AnalyticsStore !== 'undefined'
+              ? AnalyticsStore.exportSnapshot()
+              : JSON.parse(localStorage.getItem('lc_mastery') || '{"profiles":{}}'),
+          burned:
+            typeof BurnedRegistry !== 'undefined'
+              ? BurnedRegistry.toPayload()
+              : JSON.parse(localStorage.getItem('lc_burned') || '{"v":1,"keys":[],"ids":[]}'),
+          goals: Array.isArray(S.goals) ? S.goals : [],
+          activeGoalId: S.activeGoalId || null,
+          preferences: {
+            translationLangs: [S.fcLang || 'en'],
+            ttsVoices: (typeof getTtsVoicePref === 'function' && S.subject)
+              ? { [S.subject]: getTtsVoicePref(S.subject) }
+              : {},
+          },
         },
       }),
     });
@@ -201,15 +278,7 @@ const Auth = (() => {
     const sb = SupabaseAuth.getClient();
     sb.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        setToken('');
-        clearGuest();
-        if (typeof S !== 'undefined') {
-          S.user = null;
-          S.plan = 'guest';
-        }
-        localStorage.removeItem('lc_user');
-        if (typeof updUserBtn === 'function') updUserBtn();
-        if (typeof refreshUserDropdown === 'function') refreshUserDropdown();
+        // Ignore passive SIGNED_OUT (e.g. cross-tab storage noise). Auth.logout() clears state.
         return;
       }
       if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && session?.access_token) {
@@ -313,6 +382,8 @@ const Auth = (() => {
   async function register(name, email, password) {
     await loadAuthConfig();
     const em = String(email || '').trim().toLowerCase();
+    const combo = typeof readRegisterComboFromForm === 'function' ? readRegisterComboFromForm() : null;
+    if (combo && typeof savePendingCombo === 'function') savePendingCombo(combo);
 
     if (supabaseEnabled) {
       if (!(await ensureSupabaseReady())) {
@@ -323,7 +394,11 @@ const Auth = (() => {
         email: em,
         password,
         options: {
-          data: { full_name: String(name || '').trim() },
+          data: {
+            full_name: String(name || '').trim(),
+            free_combo_lang: combo?.lang || 'de',
+            free_combo_level: combo?.level || 'B1',
+          },
           emailRedirectTo: SupabaseAuth.getEmailRedirectUrl(),
         },
       });
@@ -344,7 +419,13 @@ const Auth = (() => {
     const { res, data } = await api('auth-register', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ name, email: em, password }),
+      body: JSON.stringify({
+        name,
+        email: em,
+        password,
+        lang: combo?.lang,
+        level: combo?.level,
+      }),
     });
     if (!res.ok) throw new Error(mapAuthError(data.error));
     clearGuest();
@@ -474,10 +555,8 @@ const Auth = (() => {
         if (supabaseEnabled && (await ensureSupabaseReady())) setupSupabaseAuthListener();
         return true;
       }
-      if (res.status === 401) {
-        setToken('');
-        localStorage.removeItem('lc_user');
-      } else if (restoreCachedUser()) {
+      if (res.status !== 401 && restoreCachedUser()) {
+        if (supabaseEnabled && (await ensureSupabaseReady())) setupSupabaseAuthListener();
         return true;
       }
     }
@@ -493,6 +572,16 @@ const Auth = (() => {
           if (getToken() && restoreCachedUser()) return true;
         }
       }
+    }
+
+    if (token && restoreCachedUser()) {
+      if (supabaseEnabled && (await ensureSupabaseReady())) setupSupabaseAuthListener();
+      return true;
+    }
+
+    if (token) {
+      setToken('');
+      localStorage.removeItem('lc_user');
     }
 
     if (isGuest()) {
@@ -517,7 +606,7 @@ const Auth = (() => {
   async function logout() {
     if (supabaseEnabled && SupabaseAuth.isReady()) {
       try {
-        await SupabaseAuth.getClient().auth.signOut();
+        await SupabaseAuth.getClient().auth.signOut({ scope: 'local' });
       } catch {
         /* ignore */
       }
@@ -559,7 +648,7 @@ const Auth = (() => {
     if (u[em]) throw new Error('Email already registered.');
     u[em] = { nm: name, pw: password, plan: 'free' };
     localStorage.setItem('lc_users', JSON.stringify(u));
-    applyUser({ name, email: em, plan: 'free', pro: false });
+    applyUser({ name, email: em, plan: 'free', pro: false, freeCombo: readRegisterComboFromForm?.() });
   }
 
   function localLogin(email, password) {
